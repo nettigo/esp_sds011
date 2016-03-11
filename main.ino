@@ -21,10 +21,6 @@ void display_data(int pm25, int pm10, bool crc)
 
     display.clearDisplay();
 
-    display.setRotation(0);
-    display.setTextSize(1);
-    display.setTextColor(BLACK);
-
     display.setCursor(0,0);
     display.println("   2.5  10");
     display.print("ug ");
@@ -58,6 +54,11 @@ void display_data(int pm25, int pm10, bool crc)
 void setup()
 {
     display.begin();
+
+    display.setRotation(2);
+    display.setTextSize(1);
+    display.setTextColor(BLACK);
+
     display.clearDisplay();
     display.setCursor(0,0);
     display.println("START");
