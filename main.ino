@@ -6,7 +6,7 @@ static const int PM25_NORM=25;
 static const int PM10_NORM=40;
 
 // RX, TX
-SoftwareSerial mySerial(9,8);
+SoftwareSerial mySerial(8,9);
 
 // SCLK, DIN, DC, CS, RST
 /* Adafruit_PCD8544 display = Adafruit_PCD8544(A5, A4, A3, A2, A1); */
