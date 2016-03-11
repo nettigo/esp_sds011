@@ -6,17 +6,17 @@ Sds011::Sds011(SoftwareSerial &out) : _out(out)
 
 String Sds011::firmware_version(void)
 {
-    _construct_cmd(0x7, NULL, 0);
+    _construct_cmd(CMD_FIRMWARE, NULL, 0);
     _send_cmd();
     _read_response();
 
     return String(_buf[3])+"_"+String(_buf[4])+"_"+String(_buf[5]);
 }
 
-void Sds011::set_mode(uint8_t mode)
+void Sds011::set_mode(Report_mode mode)
 {
     uint8_t data[] = {0x1, mode};
-    _construct_cmd(0x2, data, 2);
+    _construct_cmd(CMD_MODE, data, 2);
     _send_cmd();
     _ignore_response();
 }
@@ -25,14 +25,14 @@ void Sds011::set_sleep(bool sleep)
 {
     uint8_t data[] = {0x1, !sleep};
     Serial.println("SLEEP MODE:" + String(sleep));
-    _construct_cmd(0x6, data, 2);
+    _construct_cmd(CMD_SLEEP, data, 2);
     _send_cmd();
     _ignore_response();
 }
 
 void Sds011::query_data(int *pm25, int *pm10)
 {
-    _construct_cmd(0x4, NULL, 0);
+    _construct_cmd(CMD_QUERY_DATA, NULL, 0);
     _send_cmd();
     _read_response();
 

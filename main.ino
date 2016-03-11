@@ -68,7 +68,7 @@ void setup()
     Serial.begin(9600);
 
     sensor.set_sleep(false);
-    sensor.set_mode(1);
+    sensor.set_mode(ACTIVE);
 }
 
 void loop()
