@@ -1,6 +1,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
 #include <SoftwareSerial.h>
+#include "Sds011.h"
 
 static const int PM25_NORM=25;
 static const int PM10_NORM=40;
@@ -11,6 +12,8 @@ SoftwareSerial mySerial(8,9);
 // SCLK, DIN, DC, CS, RST
 /* Adafruit_PCD8544 display = Adafruit_PCD8544(A5, A4, A3, A2, A1); */
 Adafruit_PCD8544 display = Adafruit_PCD8544(A3, A2, A1, A0, 13);
+
+Sds011 sensor(mySerial);
 
 void display_data(int pm25, int pm10, bool crc)
 {
@@ -62,57 +65,23 @@ void setup()
 
     mySerial.begin(9600);
     Serial.begin(9600);
+
+    sensor.set_sleep(false);
+    sensor.set_mode(1);
 }
-
-int readByte()
-{
-    while (!mySerial.available())
-	delay(1);
-    return mySerial.read();
-}
-
-bool getData(int *pm25, int *pm10)
-{
-    int b, i;
-    byte data[11];
-
-    while (true) {
-	while ((b=readByte())!=0xAA)
-	    Serial.println(b);
-
-	data[0] = b;
-	data[1] = readByte();
-	if (data[1] != 0xC0) {
-	    continue;
-	}
-
-	for (i=2; i<11; i++)
-	{
-	    data[i] = readByte();
-	}
-	break;
-    }
-
-    *pm25 = data[2]+data[3]*256;
-    *pm10 = data[4]+data[5]*256;
-
-    int crc=0;
-    for (int i=2; i<8; i++) {
-	crc+=data[i];
-    }
-
-    return crc%256==data[8];
-}
-
-int count=1;
 
 void loop()
 {
     int pm25, pm10;
     bool ok;
 
-    ok = getData(&pm25, &pm10);
+    sensor.set_sleep(false);
+    delay(10000);
+    sensor.query_data(&pm25, &pm10);
+    ok = sensor.crc_ok();
+    sensor.set_sleep(true);
 
     display_data(pm25, pm10, ok);
-    count++;
+
+    delay(60000);
 }
