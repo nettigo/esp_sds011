@@ -24,7 +24,6 @@ void Sds011::set_mode(Report_mode mode)
 void Sds011::set_sleep(bool sleep)
 {
     uint8_t data[] = {0x1, !sleep};
-    Serial.println("SLEEP MODE:" + String(sleep));
     _construct_cmd(CMD_SLEEP, data, 2);
     _send_cmd();
     _ignore_response();
@@ -99,16 +98,13 @@ void Sds011::_read_response(void)
     uint8_t i = 1, b;
 
     while ((b=_read_byte())!=0xAA)
-	Serial.println(b);
-    Serial.println("SYNC");
+	;
 
     _buf[0] = b;
 
     for(i = 1; i<10; i++) {
 	_buf[i] = _read_byte();
-	Serial.println(_buf[i]);
     }
-    Serial.println("READ END");
 }
 
 String Sds011::_buf_to_string(void)
