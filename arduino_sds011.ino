@@ -64,6 +64,7 @@ void setup()
 #endif
     Serial.begin(9600);
 
+    display.begin();
 #ifdef ESP8266
     String r=ESP.getResetReason();
 

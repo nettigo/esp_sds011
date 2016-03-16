@@ -4,6 +4,10 @@ using namespace pcd8544;
 Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
     : pin_sclk(clk), pin_sdin(din), pin_dc(dc), pin_sce(ce), pin_reset(rst)
 {
+}
+
+void Pcd8544::begin(void)
+{
     if (pin_sce > 0) {
         pinMode(pin_sce, OUTPUT);
     }

@@ -130,6 +130,7 @@ class Pcd8544 {
         void clear(void);
         void print(const char *c);
         void setCursor(int x, int y);
+        void begin(void);
 
     private:
         void _write_cmd(enum dc_mode dc, byte data);
