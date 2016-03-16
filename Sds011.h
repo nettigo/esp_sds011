@@ -30,6 +30,7 @@ class Sds011
 	void set_mode(Report_mode mode);
 	void set_sleep(bool sleep);
 	void query_data(int *pm25, int *pm10);
+	void query_data_auto(int *pm25, int *pm10, int n);
 	bool crc_ok();
 
     private:
@@ -39,9 +40,9 @@ class Sds011
 	String _buf_to_string();
 	void _ignore_response();
 	void _read_response();
+	void _filter_data(int n, int *pm25_table, int *pm10_table, int *pm25, int *pm10);
 
 	Stream &_out;
 	uint8_t _buf[19];
 };
-
 #endif

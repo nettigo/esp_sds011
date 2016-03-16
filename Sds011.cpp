@@ -39,6 +39,25 @@ void Sds011::query_data(int *pm25, int *pm10)
     *pm10 = _buf[4] | _buf[5]<<8;
 }
 
+void Sds011::query_data_auto(int *pm25, int *pm10, int n)
+{
+    int pm25_table[n];
+    int pm10_table[n];
+    int ok;
+
+    for (int i = 0; i<n; i++) {
+	query_data(&pm25_table[i], &pm10_table[i]);
+	ok = crc_ok();
+	if (!ok) {
+	    n--, i--;
+	    continue;
+	}
+	delay(1000);
+    }
+
+    _filter_data(n, pm25_table, pm10_table, pm25, pm10);
+}
+
 bool Sds011::crc_ok(void)
 {
     uint8_t crc = 0 ;
@@ -127,4 +146,40 @@ String Sds011::_buf_to_string(void)
     }
 
     return ret;
+}
+
+void Sds011::_filter_data(int n, int *pm25_table, int *pm10_table, int *pm25, int *pm10)
+{
+    int pm25_min, pm25_max, pm10_min, pm10_max, pm25_sum, pm10_sum;
+
+    pm10_sum = pm10_min = pm10_max = pm10_table[0];
+    pm25_sum = pm25_min = pm25_max = pm25_table[0];
+
+    for (int i=1; i<n; i++) {
+	if (pm10_table[i] < pm10_min) {
+	    pm10_min = pm10_table[i];
+	}
+	if (pm10_table[i] > pm10_max) {
+	    pm10_max = pm10_table[i];
+	}
+	if (pm25_table[i] < pm25_min) {
+	    pm25_min = pm25_table[i];
+	}
+	if (pm25_table[i] > pm25_max) {
+	    pm25_max = pm25_table[i];
+	}
+	pm10_sum += pm10_table[i];
+	pm25_sum += pm25_table[i];
+    }
+
+    if (n > 2) {
+	*pm10 = (pm10_sum - pm10_max - pm10_min)/(n-2);
+	*pm25 = (pm25_sum - pm25_max - pm25_min)/(n-2);
+    } else if (n > 1) {
+	*pm10 = (pm10_sum - pm10_min)/(n-1);
+	*pm25 = (pm25_sum - pm25_min)/(n-1);
+    } else {
+	*pm10 = pm10_sum/n;
+	*pm25 = pm25_sum/n;
+    }
 }

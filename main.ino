@@ -5,6 +5,7 @@
 
 static const int PM25_NORM=25;
 static const int PM10_NORM=40;
+static const int SAMPLES=10;
 
 // RX, TX
 SoftwareSerial mySerial(8,9);
@@ -68,8 +69,8 @@ void loop()
     int pm25, pm10;
 
     sensor.set_sleep(false);
-    delay(10000);
-    sensor.query_data(&pm25, &pm10);
+    delay(1000);
+    sensor.query_data_auto(&pm25, &pm10, SAMPLES);
     sensor.set_sleep(true);
 
     display_data(pm25, pm10);
