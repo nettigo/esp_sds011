@@ -34,8 +34,7 @@ class Sds011
 	bool crc_ok();
 
     private:
-	void _construct_cmd(uint8_t cmd, uint8_t *buf, uint8_t len);
-	void _send_cmd();
+	void _send_cmd(uint8_t cmd, uint8_t *buf, uint8_t len);
 	uint8_t _read_byte();
 	String _buf_to_string();
 	void _ignore_response();
