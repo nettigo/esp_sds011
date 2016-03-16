@@ -16,6 +16,26 @@ Sds011 sensor(mySerial);
 
 Pcd8544 display;
 
+String val_to_str(int v)
+{
+    String r;
+
+    if (v > 999) {
+        r = String(v/10);
+    } else {
+        r = String(v/10);
+        if (v%10) {
+            r += String(".") + String(v%10);
+        }
+    }
+
+    for (int i = 4 - r.length(); i > 0; i--) {
+        r = String(" ") + r;
+    }
+
+    return r;
+}
+
 void display_data(int pm25, int pm10)
 {
     display.clear();
@@ -25,20 +45,16 @@ void display_data(int pm25, int pm10)
     display.setCursor(0, 1);
 
     display.print("ug ");
-    display.print(String(pm25/10).c_str());
-    display.print(".");
-    display.print(String(pm25%10).c_str());
+    display.print(val_to_str(pm25).c_str());
 
     display.setCursor(8*7, 1);
-    display.print(String(pm10/10).c_str());
-    display.print(".");
-    display.print(String(pm10%10).c_str());
+    display.print(val_to_str(pm10).c_str());
 
     display.setCursor(0, 2);
     display.print("%  ");
-    display.print(String(10*pm25/PM25_NORM).c_str());
+    display.print(val_to_str(100*pm25/PM25_NORM).c_str());
     display.setCursor(8*7, 2);
-    display.print(String(10*pm10/PM10_NORM).c_str());
+    display.print(val_to_str(100*pm10/PM10_NORM).c_str());
 }
 
 void setup()
