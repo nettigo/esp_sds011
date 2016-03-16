@@ -15,7 +15,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544(A3, A2, A1, A0, 13);
 
 Sds011 sensor(mySerial);
 
-void display_data(int pm25, int pm10, bool crc)
+void display_data(int pm25, int pm10)
 {
     static int count = 0;
 
@@ -37,14 +37,6 @@ void display_data(int pm25, int pm10, bool crc)
     display.print(10*pm25/PM25_NORM);
     display.setCursor(8*6, 8*2);
     display.println(10*pm10/PM10_NORM);
-
-    display.println();
-    display.print("CRC ");
-    if (crc) {
-	display.println("OK");
-    } else {
-	display.println("ERR");
-    }
 
     display.print("Count=");
     display.println(count++);
@@ -74,15 +66,13 @@ void setup()
 void loop()
 {
     int pm25, pm10;
-    bool ok;
 
     sensor.set_sleep(false);
     delay(10000);
     sensor.query_data(&pm25, &pm10);
-    ok = sensor.crc_ok();
     sensor.set_sleep(true);
 
-    display_data(pm25, pm10, ok);
+    display_data(pm25, pm10);
 
     delay(60000);
 }
