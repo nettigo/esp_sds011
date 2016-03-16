@@ -20,7 +20,7 @@ Pcd8544 display(13, 12, 14);
 Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
 
-String val_to_str(int v)
+String val_to_str(uint16_t v)
 {
     String r;
 
@@ -40,7 +40,7 @@ String val_to_str(int v)
     return r;
 }
 
-void display_data(int pm25, int pm10)
+void display_data(uint16_t pm25, uint16_t pm10)
 {
     display.clear();
     display.setCursor(0, 0);
@@ -56,9 +56,9 @@ void display_data(int pm25, int pm10)
 
     display.setCursor(0, 2);
     display.print("%  ");
-    display.print(val_to_str(100*pm25/PM25_NORM).c_str());
+    display.print(val_to_str((10*pm25/PM25_NORM)*10).c_str());
     display.setCursor(8*7, 2);
-    display.print(val_to_str(100*pm10/PM10_NORM).c_str());
+    display.print(val_to_str((10*pm10/PM10_NORM)*10).c_str());
 }
 
 void setup()
