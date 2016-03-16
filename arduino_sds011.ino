@@ -15,9 +15,9 @@ Sds011 sensor(mySerial);
 #endif
 
 #ifdef ESP8266
-Pcd8544 display(13, 12, 14);
+pcd8544::Pcd8544 display(13, 12, 14);
 #else
-Pcd8544 display(A3, A2, A1, A0, 13);
+pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
 
 String val_to_str(uint16_t v)
