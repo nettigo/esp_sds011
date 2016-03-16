@@ -1,6 +1,6 @@
 #include "Sds011.h"
 
-Sds011::Sds011(SoftwareSerial &out) : _out(out)
+Sds011::Sds011(Stream &out) : _out(out)
 {
 }
 

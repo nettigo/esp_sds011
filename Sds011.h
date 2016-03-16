@@ -8,7 +8,7 @@
  #include "WProgram.h"
 #endif
 
-#include <SoftwareSerial.h>
+#include <Stream.h>
 
 #define CMD_MODE 2
 #define CMD_QUERY_DATA 4
@@ -25,7 +25,7 @@ enum Report_mode {
 class Sds011
 {
     public:
-	Sds011(SoftwareSerial &out);
+	Sds011(Stream &out);
 	String firmware_version();
 	void set_mode(Report_mode mode);
 	void set_sleep(bool sleep);
@@ -40,7 +40,7 @@ class Sds011
 	void _ignore_response();
 	void _read_response();
 
-	SoftwareSerial &_out;
+	Stream &_out;
 	uint8_t _buf[19];
 };
 
