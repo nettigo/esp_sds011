@@ -102,7 +102,7 @@ uint8_t Sds011::_read_byte(void)
 
 void Sds011::_ignore_response(void)
 {
-    delay(1000);
+    delay(100);
     while (_out.available())
 	_out.read();
 }
