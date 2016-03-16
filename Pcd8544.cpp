@@ -1,21 +1,22 @@
 #include "Pcd8544.h"
 
-Pcd8544::Pcd8544(void)
+Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
+    : pin_sclk(clk), pin_sdin(din), pin_dc(dc), pin_sce(ce), pin_reset(rst)
 {
-    if (PIN_SCE > 0) {
-        pinMode(PIN_SCE, OUTPUT);
+    if (pin_sce > 0) {
+        pinMode(pin_sce, OUTPUT);
     }
-    if (PIN_RESET > 0) {
-        pinMode(PIN_RESET, OUTPUT);
+    if (pin_reset > 0) {
+        pinMode(pin_reset, OUTPUT);
     }
 
-    pinMode(PIN_DC, OUTPUT);
-    pinMode(PIN_SDIN, OUTPUT);
-    pinMode(PIN_SCLK, OUTPUT);
+    pinMode(pin_dc, OUTPUT);
+    pinMode(pin_sdin, OUTPUT);
+    pinMode(pin_sclk, OUTPUT);
 
-    if (PIN_RESET > 0) {
-        digitalWrite(PIN_RESET, LOW);
-        digitalWrite(PIN_RESET, HIGH);
+    if (pin_reset > 0) {
+        digitalWrite(pin_reset, LOW);
+        digitalWrite(pin_reset, HIGH);
     }
 
     _write_cmd(LCD_C, 0x21 );  // LCD Extended Commands.
@@ -52,15 +53,15 @@ void Pcd8544::setCursor(int x, int y)
 
 void Pcd8544::_write_cmd(byte dc, byte data)
 {
-    digitalWrite(PIN_DC, dc);
-    if (PIN_SCE > 0) {
-        digitalWrite(PIN_SCE, LOW);
+    digitalWrite(pin_dc, dc);
+    if (pin_sce > 0) {
+        digitalWrite(pin_sce, LOW);
     }
 
-    shiftOut(PIN_SDIN, PIN_SCLK, MSBFIRST, data);
+    shiftOut(pin_sdin, pin_sclk, MSBFIRST, data);
 
-    if (PIN_SCE > 0) {
-        digitalWrite(PIN_SCE, HIGH);
+    if (pin_sce > 0) {
+        digitalWrite(pin_sce, HIGH);
     }
 }
 

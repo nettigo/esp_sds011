@@ -11,12 +11,6 @@
  #include "WProgram.h"
 #endif
 
-#define PIN_SCE   -1
-#define PIN_RESET -1
-#define PIN_DC    14
-#define PIN_SDIN  12
-#define PIN_SCLK  13
-
 #define LCD_C     LOW
 #define LCD_D     HIGH
 
@@ -125,7 +119,7 @@ static const byte ASCII[][5] =
 
 class Pcd8544 {
     public:
-        Pcd8544(void);
+        Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce = -1, uint8_t rst = -1);
         void clear(void);
         void print(const char *c);
         void setCursor(int x, int y);
@@ -133,7 +127,11 @@ class Pcd8544 {
     private:
         void _write_cmd(byte dc, byte data);
         void _send_char(char c);
-
+        uint8_t pin_sclk;
+        uint8_t pin_sdin;
+        uint8_t pin_dc;
+        uint8_t pin_sce;
+        uint8_t pin_reset;
 };
 
 #endif
