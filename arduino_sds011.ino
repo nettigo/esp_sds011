@@ -24,13 +24,9 @@ String val_to_str(uint16_t v)
 {
     String r;
 
-    if (v > 999) {
-        r = String(v/10);
-    } else {
-        r = String(v/10);
-        if (v%10) {
-            r += String(".") + String(v%10);
-        }
+    r = String(v/10);
+    if (v < 1000 && v%10) {
+        r += String(".") + String(v%10);
     }
 
     for (int i = 4 - r.length(); i > 0; i--) {
