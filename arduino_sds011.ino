@@ -62,7 +62,7 @@ void setup()
 #endif
 
     sensor.set_sleep(false);
-    sensor.set_mode(ACTIVE);
+    sensor.set_mode(QUERY);
 }
 
 void loop()
