@@ -4,6 +4,8 @@ using namespace pcd8544;
 Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
     : pin_sclk(clk), pin_sdin(din), pin_dc(dc), pin_sce(ce), pin_reset(rst)
 {
+    lcd_x = 84;
+    lcd_y = 48;
 }
 
 void Pcd8544::begin(void)
@@ -24,17 +26,17 @@ void Pcd8544::begin(void)
         digitalWrite(pin_reset, HIGH);
     }
 
-    _write_cmd(mode_c, 0x21 );  // LCD Extended Commands.
-    _write_cmd(mode_c, 0xB1 );  // Set LCD Vop (Contrast).
-    _write_cmd(mode_c, 0x04 );  // Set Temp coefficent. //0x04
-    _write_cmd(mode_c, 0x14 );  // LCD bias mode 1:48. //0x13
-    _write_cmd(mode_c, 0x20 );  // LCD Basic Commands
-    _write_cmd(mode_c, 0x0C );  // LCD in normal mode.
+    _write_cmd(mode_c, 0x21);  // LCD Extended Commands.
+    _write_cmd(mode_c, 0xB1);  // Set LCD Vop (Contrast).
+    _write_cmd(mode_c, 0x04);  // Set Temp coefficent. //0x04
+    _write_cmd(mode_c, 0x14);  // LCD bias mode 1:48. //0x13
+    _write_cmd(mode_c, 0x20);  // LCD Basic Commands
+    _write_cmd(mode_c, 0x0C);  // LCD in normal mode.
 }
 
 void Pcd8544::clear(void)
 {
-    for (int index = 0; index < LCD_X * LCD_Y / 8; index++)
+    for (int index = 0; index < lcd_x * lcd_y / 8; index++)
     {
         _write_cmd(mode_d, 0x00);
     }
