@@ -72,11 +72,12 @@ void setup()
     } else {
         display.clear();
     }
-    display.setCursor(0,0);
-    display.print(r.c_str());
 #else
     display.clear();
 #endif
+
+    display.setCursor(0,0);
+    display.println("Hello");
 
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
