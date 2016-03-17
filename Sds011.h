@@ -10,14 +10,16 @@
 
 #include <Stream.h>
 
-#define CMD_MODE 2
-#define CMD_QUERY_DATA 4
-#define CMD_DEVICE_ID  5
-#define CMD_SLEEP 6
-#define CMD_FIRMWARE 7
-#define CMD_WORKING_PERIOD 8
-
 namespace sds011 {
+    enum Command {
+	CMD_MODE = 2,
+	CMD_QUERY_DATA = 4,
+	CMD_DEVICE_ID,
+	CMD_SLEEP,
+	CMD_FIRMWARE,
+	CMD_WORKING_PERIOD
+    };
+
     enum Report_mode {
 	ACTIVE = 0,
 	QUERY = 1
@@ -35,7 +37,7 @@ namespace sds011 {
 	    bool crc_ok();
 
 	private:
-	    void _send_cmd(uint8_t cmd, uint8_t *buf, uint8_t len);
+	    void _send_cmd(enum Command cmd, uint8_t *buf, uint8_t len);
 	    uint8_t _read_byte();
 	    String _buf_to_string();
 	    void _ignore_response();

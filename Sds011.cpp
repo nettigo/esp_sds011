@@ -65,7 +65,7 @@ bool Sds011::crc_ok(void)
     return crc==_buf[8];
 }
 
-void Sds011::_send_cmd(uint8_t cmd, uint8_t *data, uint8_t len)
+void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
 {
     uint8_t i, crc;
 
