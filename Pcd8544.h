@@ -10,6 +10,8 @@
 #endif
 
 namespace pcd8544 {
+    static const uint8_t CHAR_W = 7;
+
     enum dc_mode {
         mode_c = LOW,
         mode_d = HIGH
@@ -121,6 +123,7 @@ namespace pcd8544 {
             Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce = -1, uint8_t rst = -1);
             void clear(void);
             void print(const char *c);
+            void println(const char *data);
             void setCursor(int x, int y);
             void begin(void);
 
@@ -134,6 +137,8 @@ namespace pcd8544 {
             uint8_t pin_reset;
             uint8_t lcd_x;
             uint8_t lcd_y;
+            uint8_t cursor_x;
+            uint8_t cursor_y;
     };
 }
 #endif

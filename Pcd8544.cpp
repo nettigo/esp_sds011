@@ -6,6 +6,8 @@ Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
 {
     lcd_x = 84;
     lcd_y = 48;
+    cursor_x = 0;
+    cursor_y = 0;
 }
 
 void Pcd8544::begin(void)
@@ -47,13 +49,26 @@ void Pcd8544::print(const char *data)
     while (*data)
     {
         _send_char(*data++);
+        cursor_x++;
+        if (cursor_x > (lcd_x/CHAR_W)) {
+            cursor_x -= (lcd_x/CHAR_W);
+            lcd_y++;
+        }
     }
+}
+
+void Pcd8544::println(const char *data)
+{
+    print(data);
+    setCursor(0, cursor_y + 1);
 }
 
 // x - range: 0 to 84
 // y - range: 0 to 5
 void Pcd8544::setCursor(int x, int y)
 {
+    cursor_x = x;
+    cursor_y = y;
     _write_cmd(mode_c, 0x80 | x);  // Column
     _write_cmd(mode_c, 0x40 | y);  // Row
 }

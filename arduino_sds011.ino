@@ -41,16 +41,14 @@ void display_data(uint16_t pm25, uint16_t pm10)
     display.clear();
     display.setCursor(0, 0);
 
-    display.print("    2.5   10");
-    display.setCursor(0, 1);
+    display.println("    2.5   10");
 
     display.print("ug ");
     display.print(val_to_str(pm25).c_str());
 
     display.setCursor(8*7, 1);
-    display.print(val_to_str(pm10).c_str());
+    display.println(val_to_str(pm10).c_str());
 
-    display.setCursor(0, 2);
     display.print("%  ");
     display.print(val_to_str((10*pm25/PM25_NORM)*10).c_str());
     display.setCursor(8*7, 2);
