@@ -1,5 +1,7 @@
 #include "Sds011.h"
 
+using namespace sds011;
+
 Sds011::Sds011(Stream &out) : _out(out)
 {
 }

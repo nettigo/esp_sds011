@@ -7,11 +7,11 @@ static const int PM10_NORM=40;
 static const int SAMPLES=10;
 
 #ifdef ESP8266
-Sds011 sensor(Serial);
+sds011::Sds011 sensor(Serial);
 #else
 // RX, TX
 SoftwareSerial mySerial(8,9);
-Sds011 sensor(mySerial);
+sds011::Sds011 sensor(mySerial);
 #endif
 
 #ifdef ESP8266
@@ -79,7 +79,7 @@ void setup()
 #endif
 
     sensor.set_sleep(false);
-    sensor.set_mode(QUERY);
+    sensor.set_mode(sds011::QUERY);
 }
 
 void loop()
