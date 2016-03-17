@@ -1,6 +1,12 @@
 #include <SoftwareSerial.h>
 #include "Sds011.h"
 #include "Pcd8544.h"
+#include "Expander.h"
+
+#ifdef ESP8266
+#include <Wire.h>
+#include <Ticker.h>
+#endif
 
 static const int PM25_NORM=25;
 static const int PM10_NORM=40;
@@ -8,6 +14,9 @@ static const int SAMPLES=10;
 
 #ifdef ESP8266
 sds011::Sds011 sensor(Serial);
+expander::Expander expand(0x20);
+Ticker timer1;
+Ticker timer2;
 #else
 // RX, TX
 SoftwareSerial mySerial(8,9);
@@ -62,6 +71,11 @@ void setup()
 #endif
     Serial.begin(9600);
 
+#ifdef ESP8266
+    expand.begin();
+    expand.attachInterrupt(iter);
+#endif
+
     display.begin();
 #ifdef ESP8266
     String r=ESP.getResetReason();
@@ -80,6 +94,33 @@ void setup()
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
 }
+
+#ifdef ESP8266
+void turnOff(void)
+{
+    expand.digitalWrite(7, HIGH);
+
+    Serial.println("OFF");
+    expand.digitalWrite(2, HIGH);
+    expand.digitalWrite(1, HIGH);
+}
+
+void turnOn(void)
+{
+    uint8_t b = expand.readByte();
+
+    if ((b & 0b110) != 0b110) {
+        Serial.println("ON");
+        timer2.once_ms(5000, turnOff);
+        expand.digitalWrite(7, LOW);
+    }
+}
+
+void iter()
+{
+    timer1.once_ms(30, turnOn);
+}
+#endif
 
 void loop()
 {
