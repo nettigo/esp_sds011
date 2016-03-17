@@ -1,6 +1,11 @@
 #include "Pcd8544.h"
 using namespace pcd8544;
 
+#ifdef ESP8266
+#include "Expander.h"
+extern expander::Expander expand;
+#endif
+
 Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
     : pin_sclk(clk), pin_sdin(din), pin_dc(dc), pin_sce(ce), pin_reset(rst)
 {
@@ -75,7 +80,11 @@ void Pcd8544::setCursor(int x, int y)
 
 void Pcd8544::_write_cmd(enum dc_mode dc, byte data)
 {
+#ifdef ESP8266
+    expand.digitalWrite(4, dc);
+#else
     digitalWrite(pin_dc, dc);
+#endif
     if (pin_sce > 0) {
         digitalWrite(pin_sce, LOW);
     }
