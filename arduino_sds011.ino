@@ -2,6 +2,10 @@
 #include "Sds011.h"
 #include "Pcd8544.h"
 
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#endif
+
 static const int PM25_NORM=25;
 static const int PM10_NORM=40;
 static const int SAMPLES=10;
@@ -61,6 +65,13 @@ void setup()
     mySerial.begin(9600);
 #endif
     Serial.begin(9600);
+
+#ifdef ESP8266
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    delay(100);
+    WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
+#endif
 
     display.begin();
 #ifdef ESP8266
