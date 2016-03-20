@@ -95,13 +95,20 @@ void setup()
 void loop()
 {
     int pm25, pm10;
+    bool ok;
 
     sensor.set_sleep(false);
     delay(1000);
-    sensor.query_data_auto(&pm25, &pm10, SAMPLES);
+    ok = sensor.query_data_auto(&pm25, &pm10, SAMPLES);
     sensor.set_sleep(true);
 
-    display_data(pm25, pm10);
+    if (ok) {
+        display_data(pm25, pm10);
+    } else {
+        display.clear();
+        display.setCursor(0, 0);
+        display.println("NO SENSOR!");
+    }
 
 #ifdef ESP8266
     ESP.deepSleep(1000*1000*10, WAKE_RF_DEFAULT);

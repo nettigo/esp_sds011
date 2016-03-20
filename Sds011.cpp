@@ -8,8 +8,14 @@ Sds011::Sds011(Stream &out) : _out(out)
 
 String Sds011::firmware_version(void)
 {
+    bool ok;
+
     _send_cmd(CMD_FIRMWARE, NULL, 0);
-    _read_response();
+
+    ok = _read_response();
+    if (!ok) {
+        return "";
+    }
 
     return String(_buf[3])+"_"+String(_buf[4])+"_"+String(_buf[5]);
 }
@@ -28,23 +34,34 @@ void Sds011::set_sleep(bool sleep)
     _ignore_response();
 }
 
-void Sds011::query_data(int *pm25, int *pm10)
+bool Sds011::query_data(int *pm25, int *pm10)
 {
+    bool ok;
     _send_cmd(CMD_QUERY_DATA, NULL, 0);
-    _read_response();
+
+    ok =_read_response();
+    if (!ok) {
+        return false;
+    }
 
     *pm25 = _buf[2] | _buf[3]<<8;
     *pm10 = _buf[4] | _buf[5]<<8;
+
+    return true;
 }
 
-void Sds011::query_data_auto(int *pm25, int *pm10, int n)
+bool Sds011::query_data_auto(int *pm25, int *pm10, int n)
 {
     int pm25_table[n];
     int pm10_table[n];
     int ok;
 
     for (int i = 0; i<n; i++) {
-        query_data(&pm25_table[i], &pm10_table[i]);
+        ok = query_data(&pm25_table[i], &pm10_table[i]);
+        if (!ok){
+            return false;
+        }
+
         ok = crc_ok();
         if (!ok) {
             n--, i--;
@@ -54,6 +71,8 @@ void Sds011::query_data_auto(int *pm25, int *pm10, int n)
     }
 
     _filter_data(n, pm25_table, pm10_table, pm25, pm10);
+
+    return true;
 }
 
 bool Sds011::crc_ok(void)
@@ -63,6 +82,11 @@ bool Sds011::crc_ok(void)
         crc+=_buf[i];
     }
     return crc==_buf[8];
+}
+
+bool Sds011::timeout(void)
+{
+    return _timeout;
 }
 
 void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
@@ -95,10 +119,22 @@ void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
     _out.flush();
 }
 
-uint8_t Sds011::_read_byte(void)
+uint8_t Sds011::_read_byte(uint16_t timeout)
 {
-    while (!_out.available())
+    uint16_t c = 0;
+
+    while (!_out.available()) {
+        if (timeout > 0) {
+            if (c == timeout) {
+                _timeout = true;
+                return 0;
+            }
+            c++;
+        }
         delay(1);
+    }
+
+    _timeout = false;
     return _out.read();
 }
 
@@ -109,18 +145,23 @@ void Sds011::_ignore_response(void)
         _out.read();
 }
 
-void Sds011::_read_response(void)
+bool Sds011::_read_response(void)
 {
     uint8_t i = 1, b;
 
-    while ((b=_read_byte())!=0xAA)
-        ;
+    while ((b=_read_byte(1000)) != 0xAA) {
+        if (timeout()) {
+            return false;
+        }
+    }
 
     _buf[0] = b;
 
     for(i = 1; i<10; i++) {
-        _buf[i] = _read_byte();
+        _buf[i] = _read_byte(1000);
     }
+
+    return !timeout();
 }
 
 String Sds011::_buf_to_string(void)
