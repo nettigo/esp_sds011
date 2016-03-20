@@ -12,15 +12,11 @@ static const int SAMPLES=10;
 
 #ifdef ESP8266
 sds011::Sds011 sensor(Serial);
+pcd8544::Pcd8544 display(13, 12, 14);
 #else
 // RX, TX
 SoftwareSerial mySerial(8,9);
 sds011::Sds011 sensor(mySerial);
-#endif
-
-#ifdef ESP8266
-pcd8544::Pcd8544 display(13, 12, 14);
-#else
 pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
 
@@ -61,6 +57,8 @@ void display_data(uint16_t pm25, uint16_t pm10)
 
 void setup()
 {
+    bool clear = true;
+
 #ifndef ESP8266
     mySerial.begin(9600);
 #endif
@@ -71,22 +69,20 @@ void setup()
     WiFi.disconnect();
     delay(100);
     WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
+
+    String r = ESP.getResetReason();
+
+    if (r == "Deep-Sleep Wake") {
+        clear = false;
+    }
 #endif
 
     display.begin();
-#ifdef ESP8266
-    String r=ESP.getResetReason();
-
-    if (r=="Deep-Sleep Wake") {
-    } else {
+    if (clear) {
         display.clear();
+        display.setCursor(0,0);
+        display.println("Hello");
     }
-#else
-    display.clear();
-#endif
-
-    display.setCursor(0,0);
-    display.println("Hello");
 
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
