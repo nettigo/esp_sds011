@@ -81,7 +81,7 @@ void Pcd8544::setCursor(int x, int y)
 void Pcd8544::_write_cmd(enum dc_mode dc, byte data)
 {
 #ifdef ESP8266
-    expand.digitalWrite(4, dc);
+    expand.digitalWrite(6, dc);
 #else
     digitalWrite(pin_dc, dc);
 #endif

@@ -19,7 +19,7 @@ static const int SAMPLES=10;
 #ifdef ESP8266
 sds011::Sds011 sensor(Serial);
 pcd8544::Pcd8544 display(13, 12, 14);
-expander::Expander expand(0x20);
+expander::Expander expand(0x38);
 Ticker timer1;
 Ticker timer2;
 #else
@@ -78,6 +78,7 @@ void setup()
     expand.attachInterrupt(iter);
 #endif
 
+
     display.begin();
 #ifdef ESP8266
     WiFi.mode(WIFI_STA);
@@ -101,6 +102,7 @@ void setup()
 
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
+
 }
 
 #ifdef ESP8266
