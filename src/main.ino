@@ -108,11 +108,9 @@ void setup()
 #ifdef ESP8266
 void turnOff(void)
 {
-    expand.digitalWrite(7, HIGH);
+    expand.digitalWrite(0, HIGH);
 
     Serial.println("OFF");
-    expand.digitalWrite(2, HIGH);
-    expand.digitalWrite(1, HIGH);
 }
 
 void turnOn(void)
@@ -122,7 +120,7 @@ void turnOn(void)
     if ((b & 0b110) != 0b110) {
         Serial.println("ON");
         timer2.once_ms(5000, turnOff);
-        expand.digitalWrite(7, LOW);
+        expand.digitalWrite(0, LOW);
     }
 }
 
@@ -153,6 +151,6 @@ void loop()
 #ifdef ESP8266
     ESP.deepSleep(1000*1000*10, WAKE_RF_DEFAULT);
 #else
-    delay(60000);
+    delay(10000);
 #endif
 }
