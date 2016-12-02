@@ -10,6 +10,9 @@
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
+#include "wifi_sta_pass.h"
 #endif
 
 static const int PM25_NORM=25;
@@ -28,6 +31,8 @@ SoftwareSerial mySerial(8,9);
 sds011::Sds011 sensor(mySerial);
 pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
+
+static bool set_press;
 
 String val_to_str(uint16_t v)
 {
@@ -68,6 +73,7 @@ void setup()
 {
     bool clear = true;
 
+    display.begin();
 #ifndef ESP8266
     mySerial.begin(9600);
 #endif
@@ -75,11 +81,32 @@ void setup()
 
 #ifdef ESP8266
     expand.begin();
+
+    set_press = (expand.readByte() & 0b10 ) != 0b10;
+    if (set_press) {
+        display.clear();
+        display.setCursor(0, 0);
+        display.println("WIFI");
+        WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASS);
+        while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+            display.println("Connection Failed! Rebooting...");
+            delay(5000);
+            ESP.restart();
+        }
+        display.println(WiFi.localIP().toString().c_str());
+
+        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+            display.setCursor(0, 5);
+            display.println(String(progress / (total / 100)).c_str());
+          });
+        ArduinoOTA.begin();
+        return;
+    }
+
     expand.attachInterrupt(iter);
 #endif
 
 
-    display.begin();
 #ifdef ESP8266
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
@@ -93,7 +120,6 @@ void setup()
     }
 #endif
 
-    display.begin();
     if (clear) {
         display.clear();
         display.setCursor(0,0);
@@ -109,16 +135,13 @@ void setup()
 void turnOff(void)
 {
     expand.digitalWrite(0, HIGH);
-
-    Serial.println("OFF");
 }
 
 void turnOn(void)
 {
     uint8_t b = expand.readByte();
 
-    if ((b & 0b110) != 0b110) {
-        Serial.println("ON");
+    if ((b & 0b10) != 0b10) {
         timer2.once_ms(5000, turnOff);
         expand.digitalWrite(0, LOW);
     }
@@ -134,6 +157,12 @@ void loop()
 {
     int pm25, pm10;
     bool ok;
+
+    if (set_press) {
+        ArduinoOTA.handle();
+        delay(1000);
+        return;
+    }
 
     sensor.set_sleep(false);
     delay(1000);
