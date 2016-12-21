@@ -17,7 +17,7 @@ uint8_t Expander::readByte(void)
 {
     uint8_t b;
     Wire.beginTransmission(_addr);
-    Wire.requestFrom(_addr, 1);
+    Wire.requestFrom(_addr, (uint8_t) 1);
     b = Wire.read();
     Wire.endTransmission();
 
