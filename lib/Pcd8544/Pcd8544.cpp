@@ -31,6 +31,10 @@ void Pcd8544::begin(void)
     if (pin_reset > 0) {
         digitalWrite(pin_reset, LOW);
         digitalWrite(pin_reset, HIGH);
+    } else {
+        expand.digitalWrite(7, LOW);
+        delay(10);
+        expand.digitalWrite(7, HIGH);
     }
 
     _write_cmd(mode_c, 0x21);  // LCD Extended Commands.
