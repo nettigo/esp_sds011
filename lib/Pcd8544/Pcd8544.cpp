@@ -6,7 +6,7 @@ using namespace pcd8544;
 extern expander::Expander expand;
 #endif
 
-Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce, uint8_t rst)
+Pcd8544::Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, int8_t ce, int8_t rst)
     : pin_sclk(clk), pin_sdin(din), pin_dc(dc), pin_sce(ce), pin_reset(rst)
 {
     lcd_x = 84;

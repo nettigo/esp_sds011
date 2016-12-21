@@ -120,7 +120,7 @@ namespace pcd8544 {
 
     class Pcd8544 {
         public:
-            Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, uint8_t ce = -1, uint8_t rst = -1);
+            Pcd8544(uint8_t clk, uint8_t din, uint8_t dc, int8_t ce = -1, int8_t rst = -1);
             void clear(void);
             void print(const char *c);
             void println(const char *data);
@@ -133,8 +133,8 @@ namespace pcd8544 {
             uint8_t pin_sclk;
             uint8_t pin_sdin;
             uint8_t pin_dc;
-            uint8_t pin_sce;
-            uint8_t pin_reset;
+            int8_t pin_sce;
+            int8_t pin_reset;
             uint8_t lcd_x;
             uint8_t lcd_y;
             uint8_t cursor_x;
