@@ -73,14 +73,16 @@ void setup()
 {
     bool clear = true;
 
-    display.begin();
-#ifndef ESP8266
+#ifdef ESP8266
+    expand.begin();
+#else
     mySerial.begin(9600);
 #endif
     Serial.begin(9600);
 
+    display.begin();
+
 #ifdef ESP8266
-    expand.begin();
 
     set_press = (expand.readByte() & 0b10 ) != 0b10;
     if (set_press) {
