@@ -15,7 +15,7 @@ namespace dht {
             Dht(uint8_t pin);
             void begin(void);
             uint16_t get_humidity(void);
-            uint16_t get_temperature(void);
+            int16_t get_temperature(void);
 
         private:
             uint8_t _pin;

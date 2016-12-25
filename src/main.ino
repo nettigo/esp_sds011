@@ -54,7 +54,7 @@ String val_to_str(uint16_t v)
     return r;
 }
 
-void display_data(uint16_t pm25, uint16_t pm10, uint16_t t, uint16_t h)
+void display_data(uint16_t pm25, uint16_t pm10, int16_t t, uint16_t h)
 {
     display.clear();
     display.setCursor(0, 0);
@@ -185,7 +185,7 @@ void loop()
     ok = sensor.query_data_auto(&pm25, &pm10, SAMPLES);
     sensor.set_sleep(true);
 
-    uint16_t t = dht22.get_temperature();
+    int16_t t = dht22.get_temperature();
     uint16_t h = dht22.get_humidity();
 
     if (ok) {

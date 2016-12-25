@@ -17,10 +17,14 @@ uint16_t Dht::get_humidity(void)
     return _data[1] + (_data[0]<<8);
 }
 
-uint16_t Dht::get_temperature(void)
+int16_t Dht::get_temperature(void)
 {
+    int16_t t;
     _read_packet();
-    return _data[3] + (_data[2]<<8);
+
+    t = _data[3] + ((_data[2] & 0x7E)<<8);
+
+    return (_data[2] & 0x80) ? -t : t;
 }
 
 uint32_t Dht::_pulse_in(bool l, uint32_t timeout)
