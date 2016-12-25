@@ -2,6 +2,8 @@
 #include "Sds011.h"
 #include "Pcd8544.h"
 #include "Expander.h"
+#include "Dht.h"
+#include "DHT.h"
 
 #ifdef ESP8266
 #include <Wire.h>
@@ -32,6 +34,8 @@ sds011::Sds011 sensor(mySerial);
 pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
 
+dht::Dht dht22(14);
+
 static bool set_press;
 
 String val_to_str(uint16_t v)
@@ -50,7 +54,7 @@ String val_to_str(uint16_t v)
     return r;
 }
 
-void display_data(uint16_t pm25, uint16_t pm10)
+void display_data(uint16_t pm25, uint16_t pm10, uint16_t t, uint16_t h)
 {
     display.clear();
     display.setCursor(0, 0);
@@ -67,6 +71,15 @@ void display_data(uint16_t pm25, uint16_t pm10)
     display.print(val_to_str((10*pm25/PM25_NORM)*10).c_str());
     display.setCursor(8*7, 2);
     display.print(val_to_str((10*pm10/PM10_NORM)*10).c_str());
+
+    display.setCursor(0, 4);
+    display.print("t:  ");
+    display.print(val_to_str(t).c_str());
+    display.print("C");
+    display.setCursor(0, 5);
+    display.print("h:  ");
+    display.print(val_to_str(h).c_str());
+    display.print("%");
 }
 
 void setup()
@@ -81,6 +94,7 @@ void setup()
     Serial.begin(9600);
 
     display.begin();
+    dht22.begin();
 
 #ifdef ESP8266
 
@@ -171,8 +185,11 @@ void loop()
     ok = sensor.query_data_auto(&pm25, &pm10, SAMPLES);
     sensor.set_sleep(true);
 
+    uint16_t t = dht22.get_temperature();
+    uint16_t h = dht22.get_humidity();
+
     if (ok) {
-        display_data(pm25, pm10);
+        display_data(pm25, pm10, t, h);
     } else {
         display.clear();
         display.setCursor(0, 0);
