@@ -3,6 +3,8 @@
 #include "Pcd8544.h"
 #include "Expander.h"
 #include "Dht.h"
+#include "ArduinoJson.h"
+#include "FS.h"
 
 #ifdef ESP8266
 #include <Wire.h>
@@ -15,6 +17,12 @@
 #include <ArduinoOTA.h>
 #include "wifi_sta_pass.h"
 #endif
+
+static struct configuration {
+    char *wifi_ssid;
+    char *wifi_pass;
+    char *banner;
+} config;
 
 static const int PM25_NORM=25;
 static const int PM10_NORM=40;
@@ -34,6 +42,7 @@ pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
 #endif
 
 dht::Dht dht22(14);
+StaticJsonBuffer<200> jsonBuffer;
 
 static bool set_press;
 
@@ -81,9 +90,54 @@ void display_data(uint16_t pm25, uint16_t pm10, int16_t t, uint16_t h)
     display.print("%");
 }
 
+bool load_config(void)
+{
+    char buf[1024];
+
+    memset(&config, 0, sizeof(config));
+
+    File file = SPIFFS.open("/config.json", "r");
+    if (!file) {
+        return false;
+    }
+
+    size_t size = file.size();
+    if (size > sizeof(buf)) {
+        return false;
+    }
+
+    file.readBytes(buf, size);
+
+    StaticJsonBuffer<200> json_buf;
+
+    JsonObject& json = json_buf.parseObject(buf);
+
+    if (!json.success()) {
+        return false;
+    }
+
+    const char *tmp = json["wifi_ssid"];
+    if (tmp) {
+        config.wifi_ssid = strdup(tmp);
+    }
+
+    tmp = json["wifi_pass"];
+    if (tmp) {
+        config.wifi_pass = strdup(tmp);
+    }
+
+    tmp = json["banner"];
+    if (tmp) {
+        config.banner = strdup(tmp);
+    } else {
+        config.banner = strdup("");
+    }
+}
+
 void setup()
 {
     bool clear = true;
+    char *banner;
 
 #ifdef ESP8266
     expand.begin();
@@ -101,10 +155,19 @@ void setup()
     display.begin();
     dht22.begin();
 
+    SPIFFS.begin();
+
+    if (!load_config()) {
+        banner = strdup("NO CONFIG");
+    } else {
+        banner = config.banner;
+    }
+
     if (clear) {
         display.clear();
         display.setCursor(0,0);
         display.println("Hello");
+        display.println(banner);
     }
 
 #ifdef ESP8266
