@@ -3,7 +3,6 @@
 #include "Pcd8544.h"
 #include "Expander.h"
 #include "Dht.h"
-#include "DHT.h"
 
 #ifdef ESP8266
 #include <Wire.h>
