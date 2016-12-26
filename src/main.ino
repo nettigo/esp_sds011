@@ -175,6 +175,10 @@ void setup()
         display.println(banner);
     }
 
+    sensor.set_sleep(false);
+    sensor.set_mode(sds011::QUERY);
+    sensor.set_sleep(true);
+
 #ifdef ESP8266
     WiFi.mode(WIFI_AP_STA);
 
@@ -215,11 +219,6 @@ void setup()
     delay(100);
     WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
 #endif
-
-
-    sensor.set_sleep(false);
-    sensor.set_mode(sds011::QUERY);
-
 }
 
 #ifdef ESP8266
