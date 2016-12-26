@@ -87,6 +87,12 @@ void setup()
 
 #ifdef ESP8266
     expand.begin();
+
+    String r = ESP.getResetReason();
+
+    if (r == "Deep-Sleep Wake") {
+        clear = false;
+    }
 #else
     mySerial.begin(9600);
 #endif
@@ -95,19 +101,6 @@ void setup()
     display.begin();
     dht22.begin();
 
-#ifdef ESP8266
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
-    delay(100);
-    WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
-
-    String r = ESP.getResetReason();
-
-    if (r == "Deep-Sleep Wake") {
-        clear = false;
-    }
-#endif
-
     if (clear) {
         display.clear();
         display.setCursor(0,0);
@@ -115,6 +108,7 @@ void setup()
     }
 
 #ifdef ESP8266
+    WiFi.mode(WIFI_STA);
 
     delay(1000);
     set_press = (expand.readByte() & 0b10 ) != 0b10;
@@ -139,7 +133,12 @@ void setup()
     }
 
     expand.attachInterrupt(iter);
+
+    WiFi.disconnect();
+    delay(100);
+    WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
 #endif
+
 
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
