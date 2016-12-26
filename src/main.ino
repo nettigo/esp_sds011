@@ -14,8 +14,12 @@
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include "wifi_sta_pass.h"
+
+#define WIFI_AP_SSID "ESPdust"
+#define WIFI_AP_PASS "dustdust"
 #endif
 
 static struct configuration {
@@ -32,6 +36,7 @@ static const int SAMPLES=10;
 sds011::Sds011 sensor(Serial);
 pcd8544::Pcd8544 display(13, 12, 14);
 expander::Expander expand(0x38);
+ESP8266WebServer server(80);
 Ticker timer1;
 Ticker timer2;
 #else
@@ -171,7 +176,7 @@ void setup()
     }
 
 #ifdef ESP8266
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
 
     delay(1000);
     set_press = (expand.readByte() & 0b10 ) != 0b10;
@@ -179,19 +184,28 @@ void setup()
         display.clear();
         display.setCursor(0, 0);
         display.println("WIFI");
+
+        WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
+        display.println(WiFi.softAPIP().toString().c_str());
+
         WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASS);
         while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-            display.println("Connection Failed! Rebooting...");
-            delay(5000);
-            ESP.restart();
+            display.println("Wifi Connection Failed!");
         }
+
         display.println(WiFi.localIP().toString().c_str());
+
+        server.on("/", [](void) {
+            server.send(200, "text/plain", "hello from esp8266!");
+        });
 
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
             display.setCursor(0, 5);
             display.println(String(progress / (total / 100)).c_str());
           });
         ArduinoOTA.begin();
+
+        server.begin();
         return;
     }
 
@@ -237,6 +251,7 @@ void loop()
 
     if (set_press) {
         ArduinoOTA.handle();
+        server.handleClient();
         delay(1000);
         return;
     }
