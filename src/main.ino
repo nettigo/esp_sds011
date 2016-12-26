@@ -1,7 +1,10 @@
 #include <SoftwareSerial.h>
 #include "Pcd8544.h"
 #include "Expander.h"
+
 #include "config.h"
+#include "normal_mode.h"
+#include "setup_mode.h"
 
 #include <Wire.h>
 
@@ -11,11 +14,6 @@ pcd8544::Pcd8544 display(13, 12, 14);
 expander::Expander expand(0x38);
 
 static bool set_press;
-
-void normal_loop(void);
-void normal_setup(void);
-void setup_loop(void);
-void setup_setup(void);
 
 void setup()
 {
