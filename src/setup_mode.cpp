@@ -30,13 +30,13 @@ void setup_setup(void)
     display.println(WiFi.localIP().toString().c_str());
 
     server.on("/", [](void) {
-            server.send(200, "text/plain", "hello from esp8266!");
-            });
+        server.send(200, "text/plain", "hello from esp8266!");
+    });
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-            display.setCursor(0, 5);
-            display.println(String(progress / (total / 100)).c_str());
-            });
+        display.setCursor(0, 5);
+        display.println(String(progress / (total / 100)).c_str());
+    });
     ArduinoOTA.begin();
 
     server.begin();
