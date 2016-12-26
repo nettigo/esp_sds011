@@ -98,45 +98,60 @@ void display_data(uint16_t pm25, uint16_t pm10, int16_t t, uint16_t h)
 bool load_config(void)
 {
     char buf[1024];
+    const char *tmp;
+    StaticJsonBuffer<200> json_buf;
+    bool ret = false;
+    size_t size;
 
     memset(&config, 0, sizeof(config));
 
+    SPIFFS.begin();
+
     File file = SPIFFS.open("/config.json", "r");
     if (!file) {
-        return false;
+        goto out2;
     }
 
-    size_t size = file.size();
+    size = file.size();
     if (size > sizeof(buf)) {
-        return false;
+        goto out;
     }
 
     file.readBytes(buf, size);
 
-    StaticJsonBuffer<200> json_buf;
+    {
+        JsonObject &json = json_buf.parseObject(buf);
 
-    JsonObject& json = json_buf.parseObject(buf);
+        if (!json.success()) {
+            goto out;
+        }
 
-    if (!json.success()) {
-        return false;
+        tmp = json["wifi_ssid"];
+        if (tmp) {
+            config.wifi_ssid = strdup(tmp);
+        }
+
+        tmp = json["wifi_pass"];
+        if (tmp) {
+            config.wifi_pass = strdup(tmp);
+        }
+
+        tmp = json["banner"];
+        if (tmp) {
+            config.banner = strdup(tmp);
+        } else {
+            config.banner = strdup("");
+        }
     }
 
-    const char *tmp = json["wifi_ssid"];
-    if (tmp) {
-        config.wifi_ssid = strdup(tmp);
-    }
+    ret = true;
 
-    tmp = json["wifi_pass"];
-    if (tmp) {
-        config.wifi_pass = strdup(tmp);
-    }
+out:
+    file.close();
+out2:
+    SPIFFS.end();
 
-    tmp = json["banner"];
-    if (tmp) {
-        config.banner = strdup(tmp);
-    } else {
-        config.banner = strdup("");
-    }
+    return ret;
 }
 
 void setup()
@@ -159,8 +174,6 @@ void setup()
 
     display.begin();
     dht22.begin();
-
-    SPIFFS.begin();
 
     if (!load_config()) {
         banner = strdup("NO CONFIG");
