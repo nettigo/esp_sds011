@@ -1,4 +1,3 @@
-#ifdef ESP8266
 #include <Wire.h>
 #include "Expander.h"
 using namespace expander;
@@ -56,4 +55,3 @@ void Expander::attachInterrupt(void (*userFunc)(void))
     pinMode(2, INPUT_PULLUP);
     ::attachInterrupt(2, userFunc, FALLING);
 }
-#endif

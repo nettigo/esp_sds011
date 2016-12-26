@@ -4,9 +4,7 @@
 #include "ArduinoJson.h"
 #include "FS.h"
 
-#ifdef ESP8266
 #include <Wire.h>
-#endif
 
 static struct configuration {
     char *wifi_ssid;
@@ -14,14 +12,8 @@ static struct configuration {
     char *banner;
 } config;
 
-#ifdef ESP8266
 pcd8544::Pcd8544 display(13, 12, 14);
 expander::Expander expand(0x38);
-#else
-// RX, TX
-SoftwareSerial mySerial(8,9);
-pcd8544::Pcd8544 display(A3, A2, A1, A0, 13);
-#endif
 
 StaticJsonBuffer<200> jsonBuffer;
 
@@ -96,7 +88,6 @@ void setup()
     bool clear = true;
     char *banner;
 
-#ifdef ESP8266
     expand.begin();
 
     String r = ESP.getResetReason();
@@ -104,9 +95,7 @@ void setup()
     if (r == "Deep-Sleep Wake") {
         clear = false;
     }
-#else
-    mySerial.begin(9600);
-#endif
+
     Serial.begin(9600);
 
     display.begin();
@@ -124,10 +113,8 @@ void setup()
         display.println(banner);
     }
 
-#ifdef ESP8266
     delay(1000);
     set_press = (expand.readByte() & 0b10 ) != 0b10;
-#endif
 
     if (set_press) {
         setup_setup();

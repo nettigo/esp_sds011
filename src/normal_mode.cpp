@@ -118,9 +118,5 @@ void normal_loop(void)
         display.println("NO SENSOR!");
     }
 
-#ifdef ESP8266
     ESP.deepSleep(1000*1000*10, WAKE_RF_DEFAULT);
-#else
-    delay(10000);
-#endif
 }
