@@ -7,3 +7,4 @@ struct Configuration {
 };
 
 bool load_config(void);
+bool save_config(void);

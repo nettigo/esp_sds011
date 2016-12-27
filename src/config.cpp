@@ -6,6 +6,27 @@ struct Configuration config;
 
 #define CONFIG_BUF_SZ 1024
 
+bool save_config(void)
+{
+    bool ret = false;
+
+    StaticJsonBuffer<200> json_buf;
+    JsonObject &json = json_buf.createObject();
+    json["wifi_ssid"] = config.wifi_ssid;
+    json["wifi_pass"] = config.wifi_pass;
+    json["banner"] = config.banner;
+
+    File file = SPIFFS.open("/config.json", "w");
+    if (!file) {
+        goto out;
+    }
+
+    json.printTo(file);
+
+out:
+    return ret;
+}
+
 bool load_config(void)
 {
     char buf[CONFIG_BUF_SZ];
