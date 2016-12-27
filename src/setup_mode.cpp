@@ -4,7 +4,6 @@
 #include <FS.h>
 #include "Pcd8544.h"
 #include "config.h"
-#include "wifi_sta_pass.h"
 
 #define WIFI_AP_SSID "ESPdust"
 #define WIFI_AP_PASS "dustdust"
@@ -42,7 +41,7 @@ void setup_setup(void)
     WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
     display.println(WiFi.softAPIP().toString().c_str());
 
-    WiFi.begin(WIFI_STA_SSID, WIFI_STA_PASS);
+    WiFi.begin(config.wifi_ssid, config.wifi_pass);
     while (WiFi.waitForConnectResult() != WL_CONNECTED) {
         display.println("Wifi Connection Failed!");
     }
