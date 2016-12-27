@@ -1,15 +1,35 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
+#include <FS.h>
 #include "Pcd8544.h"
+#include "config.h"
 #include "wifi_sta_pass.h"
 
 #define WIFI_AP_SSID "ESPdust"
 #define WIFI_AP_PASS "dustdust"
 
 extern pcd8544::Pcd8544 display;
+extern struct Configuration config;
 
 ESP8266WebServer server(80);
+
+static void on_root(void)
+{
+    File file = SPIFFS.open("/index.html", "r");
+    if (!file) {
+        server.send(200, "text/plain", "No index.html!");
+        return;
+    }
+
+    String s = file.readString();
+    s.replace("{wifi_staip}", WiFi.localIP().toString());
+    s.replace("{wifi_stassid}", config.wifi_ssid);
+    s.replace("{wifi_stapass}", config.wifi_pass);
+    s.replace("{wifi_apip}", WiFi.softAPIP().toString().c_str());
+
+    server.send(200, "text/html", s.c_str());
+}
 
 void setup_setup(void)
 {
@@ -29,9 +49,7 @@ void setup_setup(void)
 
     display.println(WiFi.localIP().toString().c_str());
 
-    server.on("/", [](void) {
-        server.send(200, "text/plain", "hello from esp8266!");
-    });
+    server.on("/", on_root);
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
         display.setCursor(0, 5);
@@ -40,6 +58,8 @@ void setup_setup(void)
     ArduinoOTA.begin();
 
     server.begin();
+
+    SPIFFS.begin();
 }
 
 void setup_loop(void)
