@@ -20,19 +20,16 @@ void setup()
 {
     bool clear = true;
     char *banner;
+    String r = ESP.getResetReason();
 
     expand.begin();
-
-    String r = ESP.getResetReason();
+    Serial.begin(9600);
     SPIFFS.begin();
+    display.begin();
 
     if (r == "Deep-Sleep Wake") {
         clear = false;
     }
-
-    Serial.begin(9600);
-
-    display.begin();
 
     if (!load_config()) {
         banner = strdup("NO CONFIG");
