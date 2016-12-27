@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h>
+#include <FS.h>
 #include "Pcd8544.h"
 #include "Expander.h"
 
@@ -23,6 +24,7 @@ void setup()
     expand.begin();
 
     String r = ESP.getResetReason();
+    SPIFFS.begin();
 
     if (r == "Deep-Sleep Wake") {
         clear = false;

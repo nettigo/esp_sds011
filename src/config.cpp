@@ -16,11 +16,9 @@ bool load_config(void)
 
     memset(&config, 0, sizeof(config));
 
-    SPIFFS.begin();
-
     File file = SPIFFS.open("/config.json", "r");
     if (!file) {
-        goto out2;
+        return ret;
     }
 
     size = file.size();
@@ -59,8 +57,6 @@ bool load_config(void)
 
 out:
     file.close();
-out2:
-    SPIFFS.end();
 
     return ret;
 }
