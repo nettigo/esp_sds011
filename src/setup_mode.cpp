@@ -42,7 +42,7 @@ void setup_setup(void)
     display.println(WiFi.softAPIP().toString().c_str());
 
     WiFi.begin(config.wifi_ssid, config.wifi_pass);
-    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
         display.println("Wifi Connection Failed!");
     }
 
