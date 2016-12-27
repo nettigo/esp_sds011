@@ -26,8 +26,35 @@ static void on_root(void)
     s.replace("{wifi_stassid}", config.wifi_ssid);
     s.replace("{wifi_stapass}", config.wifi_pass);
     s.replace("{wifi_apip}", WiFi.softAPIP().toString().c_str());
+    s.replace("{banner}", config.banner);
 
     server.send(200, "text/html", s.c_str());
+}
+
+static void on_form(void)
+{
+    if (server.method() != HTTP_POST) {
+        server.send(500, "text/plain", "Only POST supported");
+    }
+
+    if (!server.hasArg("banner") || !server.hasArg("wifi_stassid") ||
+        !server.hasArg("wifi_stapass")) {
+        server.send(500, "text/plain", "Bad form");
+    }
+
+    String val = server.arg("banner");
+    config.banner = strdup(val.c_str());
+
+    val = server.arg("wifi_stassid");
+    config.wifi_ssid = strdup(val.c_str());
+
+    val = server.arg("wifi_stapass");
+    config.wifi_pass = strdup(val.c_str());
+
+    save_config();
+
+    server.sendHeader("Location", "/");
+    server.send(301, "text/html", "Moved Permanently");
 }
 
 void setup_setup(void)
@@ -49,6 +76,7 @@ void setup_setup(void)
     display.println(WiFi.localIP().toString().c_str());
 
     server.on("/", on_root);
+    server.on("/form", on_form);
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
         display.setCursor(0, 5);
