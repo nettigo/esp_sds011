@@ -88,10 +88,6 @@ void normal_setup(void)
 
     WiFi.mode(WIFI_STA);
 
-    WiFi.disconnect();
-    delay(100);
-    WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
-
     sensor.set_sleep(false);
     sensor.set_mode(sds011::QUERY);
     sensor.set_sleep(true);
@@ -118,5 +114,10 @@ void normal_loop(void)
         display.println("NO SENSOR!");
     }
 
+    WiFi.disconnect();
+    delay(100);
+    WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
+
+    delay(3000);
     ESP.deepSleep(1000*1000*10, WAKE_RF_DEFAULT);
 }
