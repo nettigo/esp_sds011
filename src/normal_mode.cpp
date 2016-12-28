@@ -5,6 +5,7 @@
 #include "Expander.h"
 #include "Dht.h"
 #include "config.h"
+#include "send.h"
 
 extern pcd8544::Pcd8544 display;
 extern expander::Expander expand;
@@ -117,6 +118,7 @@ void normal_loop(void)
             display.println("Wifi Connection Failed!");
         }
         display.print(".");
+        display.println(String(send_ts(pm25, pm10, t, h)).c_str());
     } else {
         display.clear();
         display.setCursor(0, 0);
