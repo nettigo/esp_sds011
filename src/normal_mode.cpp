@@ -128,5 +128,5 @@ void normal_loop(void)
     WiFi.forceSleepBegin(); // Use WiFi.forceSleepWake() to enable wifi
 
     delay(3000);
-    ESP.deepSleep(1000*1000*10, WAKE_RF_DEFAULT);
+    ESP.deepSleep(1000*1000*config.sleep_time, WAKE_RF_DEFAULT);
 }
