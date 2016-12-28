@@ -4,9 +4,11 @@
 #include "Pcd8544.h"
 #include "Expander.h"
 #include "Dht.h"
+#include "config.h"
 
 extern pcd8544::Pcd8544 display;
 extern expander::Expander expand;
+extern struct Configuration config;
 
 sds011::Sds011 sensor(Serial);
 dht::Dht dht22(14);
@@ -98,6 +100,8 @@ void normal_loop(void)
     int pm25, pm10;
     bool ok;
 
+    WiFi.begin(config.wifi_ssid, config.wifi_pass);
+
     sensor.set_sleep(false);
     delay(1000);
     ok = sensor.query_data_auto(&pm25, &pm10, SAMPLES);
@@ -108,6 +112,11 @@ void normal_loop(void)
 
     if (ok) {
         display_data(pm25, pm10, t, h);
+        display.print(".");
+        if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+            display.println("Wifi Connection Failed!");
+        }
+        display.print(".");
     } else {
         display.clear();
         display.setCursor(0, 0);
