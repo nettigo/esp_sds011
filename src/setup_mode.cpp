@@ -26,7 +26,9 @@ static void on_root(void)
     s.replace("{wifi_stassid}", config.wifi_ssid);
     s.replace("{wifi_stapass}", config.wifi_pass);
     s.replace("{wifi_apip}", WiFi.softAPIP().toString().c_str());
+    s.replace("{ts_api_key}", config.ts_api_key);
     s.replace("{banner}", config.banner);
+    s.replace("{sleep_time}", String(config.sleep_time));
 
     server.send(200, "text/html", s.c_str());
 }
@@ -38,7 +40,7 @@ static void on_form(void)
     }
 
     if (!server.hasArg("banner") || !server.hasArg("wifi_stassid") ||
-        !server.hasArg("wifi_stapass")) {
+        !server.hasArg("wifi_stapass") || !server.hasArg("ts_api_key")) {
         server.send(500, "text/plain", "Bad form");
     }
 
@@ -50,6 +52,14 @@ static void on_form(void)
 
     val = server.arg("wifi_stapass");
     config.wifi_pass = strdup(val.c_str());
+
+    val = server.arg("ts_api_key");
+    config.ts_api_key = strdup(val.c_str());
+
+    val = server.arg("sleep_time");
+    if (atoi(val.c_str()) > 19) {
+        config.sleep_time = atoi(val.c_str());
+    }
 
     save_config();
 

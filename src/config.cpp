@@ -15,6 +15,8 @@ bool save_config(void)
     json["wifi_ssid"] = config.wifi_ssid;
     json["wifi_pass"] = config.wifi_pass;
     json["banner"] = config.banner;
+    json["ts_api_key"] = config.ts_api_key;
+    json["sleep_time"] = config.sleep_time;
 
     File file = SPIFFS.open("/config.json", "w");
     if (!file) {
@@ -71,6 +73,22 @@ bool load_config(void)
             config.banner = strdup(tmp);
         } else {
             config.banner = strdup("");
+        }
+
+        tmp = json["ts_api_key"];
+        if (tmp) {
+            config.ts_api_key = strdup(tmp);
+        } else {
+            config.banner = strdup("");
+        }
+
+        tmp = json["sleep_time"];
+        if (tmp) {
+            config.sleep_time = atoi(tmp);
+        }
+        if (config.sleep_time < 20) {
+            config.sleep_time = 20;
+
         }
     }
 
