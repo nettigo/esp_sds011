@@ -51,14 +51,14 @@ static void display_data(uint16_t pm25, uint16_t pm10, int16_t t, uint16_t h)
     display.setCursor(8*7, 2);
     display.print(val_to_str((10*pm10/PM10_NORM)*10).c_str());
 
-    display.setCursor(0, 4);
+    display.setCursor(0, 3);
     display.print("t:  ");
     display.print(val_to_str(t).c_str());
     display.print("C");
-    display.setCursor(0, 5);
+    display.setCursor(0, 4);
     display.print("h:  ");
     display.print(val_to_str(h).c_str());
-    display.print("%");
+    display.println("%");
 }
 
 static void turnOff(void)
