@@ -1,12 +1,10 @@
 #include "Sds011.h"
 
-using namespace sds011;
-
-Sds011::Sds011(Stream &out) : _out(out)
+Sds011::Sds011(Stream& out) : _out(out)
 {
 }
 
-String Sds011::firmware_version(void)
+String Sds011::firmware_version()
 {
 	bool ok;
 
@@ -34,7 +32,7 @@ void Sds011::set_sleep(bool sleep)
 	_ignore_response();
 }
 
-bool Sds011::query_data(int *pm25, int *pm10)
+bool Sds011::query_data(int& pm25, int& pm10)
 {
 	bool ok;
 	_send_cmd(CMD_QUERY_DATA, NULL, 0);
@@ -44,27 +42,28 @@ bool Sds011::query_data(int *pm25, int *pm10)
 		return false;
 	}
 
-	*pm25 = _buf[2] | _buf[3] << 8;
-	*pm10 = _buf[4] | _buf[5] << 8;
+	pm25 = _buf[2] | _buf[3] << 8;
+	pm10 = _buf[4] | _buf[5] << 8;
 
 	return true;
 }
 
-bool Sds011::query_data_auto(int *pm25, int *pm10, int n)
+bool Sds011::query_data_auto(int& pm25, int& pm10, int n)
 {
 	int pm25_table[n];
 	int pm10_table[n];
 	int ok;
 
-	for (int i = 0; i < n; i++) {
-		ok = query_data(&pm25_table[i], &pm10_table[i]);
+	for (int i = 0; i < n; ++i) {
+		ok = query_data(pm25_table[i], pm10_table[i]);
 		if (!ok) {
 			return false;
 		}
 
 		ok = crc_ok();
 		if (!ok) {
-			n--, i--;
+			--n;
+			--i;
 			continue;
 		}
 		delay(1000);
@@ -75,23 +74,24 @@ bool Sds011::query_data_auto(int *pm25, int *pm10, int n)
 	return true;
 }
 
-bool Sds011::crc_ok(void)
+bool Sds011::crc_ok()
 {
 	uint8_t crc = 0;
-	for (int i = 2; i < 8; i++) {
+	for (int i = 2; i < 8; ++i) {
 		crc += _buf[i];
 	}
 	return crc == _buf[8];
 }
 
-bool Sds011::timeout(void)
+bool Sds011::timeout()
 {
 	return _timeout;
 }
 
-void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
+void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len)
 {
-	uint8_t i, crc;
+	uint8_t i;
+	uint8_t crc;
 
 	_buf[0] = 0xAA;
 	_buf[1] = 0xB4;
@@ -102,7 +102,7 @@ void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
 
 	crc = cmd + _buf[15] + _buf[16];
 
-	for (i = 0; i < 12; i++) {
+	for (i = 0; i < 12; ++i) {
 		if (i < len) {
 			_buf[3 + i] = data[i];
 		}
@@ -114,7 +114,7 @@ void Sds011::_send_cmd(enum Command cmd, uint8_t *data, uint8_t len)
 
 	_buf[17] = crc;
 
-	for (i = 0; i < 19; i++) {
+	for (i = 0; i < 19; ++i) {
 		_out.write(_buf[i]);
 	}
 	_out.flush();
@@ -139,16 +139,17 @@ uint8_t Sds011::_read_byte(uint16_t timeout)
 	return _out.read();
 }
 
-void Sds011::_ignore_response(void)
+void Sds011::_ignore_response()
 {
 	delay(300);
 	while (_out.available())
 		_out.read();
 }
 
-bool Sds011::_read_response(void)
+bool Sds011::_read_response()
 {
-	uint8_t i = 1, b;
+	uint8_t i = 1;
+	uint8_t b;
 
 	while ((b = _read_byte(1000)) != 0xAA) {
 		if (timeout()) {
@@ -187,14 +188,14 @@ String Sds011::_buf_to_string(void)
 	return ret;
 }
 
-void Sds011::_filter_data(int n, int *pm25_table, int *pm10_table, int *pm25, int *pm10)
+void Sds011::_filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10)
 {
 	int pm25_min, pm25_max, pm10_min, pm10_max, pm25_sum, pm10_sum;
 
 	pm10_sum = pm10_min = pm10_max = pm10_table[0];
 	pm25_sum = pm25_min = pm25_max = pm25_table[0];
 
-	for (int i = 1; i < n; i++) {
+	for (int i = 1; i < n; ++i) {
 		if (pm10_table[i] < pm10_min) {
 			pm10_min = pm10_table[i];
 		}
@@ -212,15 +213,15 @@ void Sds011::_filter_data(int n, int *pm25_table, int *pm10_table, int *pm25, in
 	}
 
 	if (n > 2) {
-		*pm10 = (pm10_sum - pm10_max - pm10_min) / (n - 2);
-		*pm25 = (pm25_sum - pm25_max - pm25_min) / (n - 2);
+		pm10 = (pm10_sum - pm10_max - pm10_min) / (n - 2);
+		pm25 = (pm25_sum - pm25_max - pm25_min) / (n - 2);
 	}
 	else if (n > 1) {
-		*pm10 = (pm10_sum - pm10_min) / (n - 1);
-		*pm25 = (pm25_sum - pm25_min) / (n - 1);
+		pm10 = (pm10_sum - pm10_min) / (n - 1);
+		pm25 = (pm25_sum - pm25_min) / (n - 1);
 	}
 	else {
-		*pm10 = pm10_sum / n;
-		*pm25 = pm25_sum / n;
+		pm10 = pm10_sum / n;
+		pm25 = pm25_sum / n;
 	}
 }
