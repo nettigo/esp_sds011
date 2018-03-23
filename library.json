@@ -1,0 +1,15 @@
+{
+    "name": "ArduinoSDS011",
+    "version": "0.1",
+    "keywords": [
+      "sds011"
+    ],
+    "description": "Arduino library for the SDS011 particulate matter sensor",
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/doknet/arduino_sds011"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}
