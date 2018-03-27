@@ -10,16 +10,15 @@
 
 #include <Stream.h>
 
-class Sds011
-{
+class Sds011 {
 public:
     enum Command {
-        CMD_MODE = 2,
+        CMD_DATA_REPORTING_MODE = 2,
         CMD_QUERY_DATA = 4,
-        CMD_DEVICE_ID,
-        CMD_SLEEP = 6,
-        CMD_FIRMWARE = 7,
-        CMD_WORKING_PERIOD
+        CMD_SET_DEVICE_ID = 5,
+        CMD_SLEEP_AND_WORK = 6,
+        CMD_FIRMWARE_VERSION = 7,
+        CMD_WORKING_PERIOD = 8
     };
 
     enum Report_mode {
@@ -28,9 +27,14 @@ public:
     };
 
     Sds011(Stream& out);
-    bool device_info(String& firmware_version, String& device_id);
-    bool set_mode(Report_mode mode);
+    bool device_info(String& firmware_version, uint16_t& device_id);
+    bool set_data_reporting_mode(Report_mode mode);
+    bool get_data_reporting_mode(Report_mode& mode);
+    bool set_device_id(uint16_t device_id);
     bool set_sleep(bool sleep);
+    bool get_sleep(bool& sleep);
+    bool set_working_period(uint8_t minutes);
+    bool get_working_period(uint8_t& minutes);
     bool query_data(int& pm25, int& pm10);
     bool query_data(int& pm25, int& pm10, int n);
     bool query_data_auto(int& pm25, int& pm10);
