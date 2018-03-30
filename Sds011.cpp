@@ -162,7 +162,7 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 
 	_buf[17] = crc;
 
-	_ignore_response();
+	_clear_responses();
 	_out.write(_buf, sizeof(_buf));
 }
 
@@ -179,8 +179,7 @@ uint8_t Sds011::_read_byte(long unsigned deadline) {
 	return _out.read();
 }
 
-void Sds011::_ignore_response() {
-	delay(200);
+void Sds011::_clear_responses() {
 	auto avail = _out.available();
 	while (avail--) {
 		_out.read();

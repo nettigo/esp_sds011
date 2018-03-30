@@ -51,7 +51,7 @@ private:
 	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
 	uint8_t _read_byte(long unsigned deadline = 0);
 	String _buf_to_string();
-	void _ignore_response();
+	void _clear_responses();
 	bool _read_response(enum Command cmd);
 
 	SoftwareSerial& _out;
