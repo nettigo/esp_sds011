@@ -9,6 +9,7 @@
 #endif
 
 #include <Stream.h>
+#include <SoftwareSerial.h>
 
 class Sds011 {
 public:
@@ -26,7 +27,7 @@ public:
 		QUERY = 1
 	};
 
-	Sds011(Stream& out);
+	Sds011(SoftwareSerial& out);
 	bool device_info(String& firmware_version, uint16_t& device_id);
 	bool set_data_reporting_mode(Report_mode mode);
 	bool get_data_reporting_mode(Report_mode& mode);
@@ -53,7 +54,7 @@ private:
 	void _ignore_response();
 	bool _read_response(enum Command cmd);
 
-	Stream& _out;
+	SoftwareSerial& _out;
 	uint8_t _buf[19];
 	bool _timeout = false;
 
