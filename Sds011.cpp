@@ -93,7 +93,7 @@ bool Sds011::query_data(int& pm25, int& pm10, int n) {
 		delay(1000);
 	}
 
-	_filter_data(n, pm25_table, pm10_table, pm25, pm10);
+	filter_data(n, pm25_table, pm10_table, pm25, pm10);
 	return n > 0;
 }
 
@@ -122,7 +122,7 @@ bool Sds011::query_data_auto(int& pm25, int& pm10, int n) {
 		delay(1000);
 	}
 
-	_filter_data(n, pm25_table, pm10_table, pm25, pm10);
+	filter_data(n, pm25_table, pm10_table, pm25, pm10);
 	return n > 0;
 }
 
@@ -180,14 +180,15 @@ uint8_t Sds011::_read_byte(long unsigned deadline) {
 
 void Sds011::_ignore_response() {
 	delay(200);
-	while (_out.available()) {
+	auto avail = _out.available();
+	while (avail--) {
 		_out.read();
 	}
 }
 
 bool Sds011::_read_response(enum Command cmd) {
 	uint8_t i = 0;
-	long unsigned deadline = millis() + 1000;
+	long unsigned deadline = millis() + 20;
 	while (i < 3) {
 		_buf[i] = _read_byte(deadline);
 		if (timeout()) { return false; }
@@ -225,7 +226,7 @@ String Sds011::_buf_to_string(void) {
 	return ret;
 }
 
-void Sds011::_filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
+void Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
 	int pm25_min, pm25_max, pm10_min, pm10_max, pm25_sum, pm10_sum;
 
 	pm10_sum = pm10_min = pm10_max = pm10_table[0];
@@ -257,5 +258,21 @@ void Sds011::_filter_data(int n, const int* pm25_table, const int* pm10_table, i
 	} else {
 		pm10 = pm10_sum / n;
 		pm25 = pm25_sum / n;
+	}
+}
+
+void Sds011::on_query_data_auto(std::function<void(int pm25, int pm10)> handler) {
+	if (!handler) { _out.onReceive(0); }
+	query_data_auto_handler = handler;
+	if (handler) {
+		_out.onReceive([this](int avail) {
+			int possibleMsgCnt = avail / 10;
+			while (possibleMsgCnt--) {
+				int pm25;
+				int pm10;
+				if (!query_data_auto(pm25, pm10)) { break; }
+				query_data_auto_handler(pm25, pm10);
+			}
+		});
 	}
 }

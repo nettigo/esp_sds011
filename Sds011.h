@@ -42,17 +42,22 @@ public:
 	bool timeout();
 	bool crc_ok();
 
+	void filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
+
+	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
+
 private:
 	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
 	uint8_t _read_byte(long unsigned deadline = 0);
 	String _buf_to_string();
 	void _ignore_response();
 	bool _read_response(enum Command cmd);
-	void _filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
 	Stream& _out;
 	uint8_t _buf[19];
 	bool _timeout = false;
+
+	std::function<void(int pm25, int pm10)> query_data_auto_handler = 0;
 };
 
 #endif
