@@ -162,6 +162,7 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 
 	_buf[17] = crc;
 
+	_ignore_response();
 	_out.write(_buf, sizeof(_buf));
 }
 
