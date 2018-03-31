@@ -9,9 +9,8 @@
 #endif
 
 #include <Stream.h>
-#include <SoftwareSerial.h>
 
-class Sds011 {
+class Sds011Base {
 public:
 	enum Command {
 		CMD_DATA_REPORTING_MODE = 2,
@@ -27,7 +26,9 @@ public:
 		QUERY = 1
 	};
 
-	Sds011(SoftwareSerial& out);
+	Sds011Base(Stream& out) : _out(out) {
+	}
+
 	bool device_info(String& firmware_version, uint16_t& device_id);
 	bool set_data_reporting_mode(Report_mode mode);
 	bool get_data_reporting_mode(Report_mode& mode);
@@ -45,20 +46,45 @@ public:
 
 	void filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
-	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
-
-private:
+protected:
 	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
 	uint8_t _read_byte(long unsigned deadline = 0);
 	String _buf_to_string();
 	void _clear_responses();
 	bool _read_response(enum Command cmd);
 
-	SoftwareSerial& _out;
+	Stream& _out;
 	uint8_t _buf[19];
 	bool _timeout = false;
+};
 
+template< class S > class Sds011 : public Sds011Base {
+	static_assert(std::is_base_of<Stream, S>::value, "S must derive from Stream");
+public:
+	Sds011(S& out) : Sds011Base(out) {
+	}
+
+	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
+
+private:
+	S& _get_out() { return static_cast< S& >(_out); }
 	std::function<void(int pm25, int pm10)> query_data_auto_handler = 0;
 };
+
+template< class S > void Sds011< S >::on_query_data_auto(std::function<void(int pm25, int pm10)> handler) {
+	if (!handler) { _get_out().onReceive(0); }
+	query_data_auto_handler = handler;
+	if (handler) {
+		_get_out().onReceive([this](int avail) {
+			int possibleMsgCnt = avail / 10;
+			while (possibleMsgCnt--) {
+				int pm25;
+				int pm10;
+				if (!query_data_auto(pm25, pm10)) { break; }
+				query_data_auto_handler(pm25, pm10);
+			}
+		});
+	}
+}
 
 #endif
