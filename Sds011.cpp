@@ -16,7 +16,7 @@ bool Sds011::set_data_reporting_mode(Report_mode mode) {
 }
 
 bool Sds011::get_data_reporting_mode(Report_mode& mode) {
-	_send_cmd(CMD_DATA_REPORTING_MODE, NULL, 2);
+	_send_cmd(CMD_DATA_REPORTING_MODE, NULL, 0);
 	bool ok = _read_response(CMD_DATA_REPORTING_MODE);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
 	mode = static_cast<Report_mode>(_buf[4]);
@@ -36,7 +36,7 @@ bool Sds011::set_sleep(bool sleep) {
 }
 
 bool Sds011::get_sleep(bool& sleep) {
-	_send_cmd(CMD_SLEEP_AND_WORK, NULL, 2);
+	_send_cmd(CMD_SLEEP_AND_WORK, NULL, 0);
 	bool ok = _read_response(CMD_SLEEP_AND_WORK);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
 	sleep = !_buf[4];
@@ -50,7 +50,7 @@ bool Sds011::set_working_period(uint8_t minutes) {
 }
 
 bool Sds011::get_working_period(uint8_t& minutes) {
-	_send_cmd(CMD_WORKING_PERIOD, NULL, 2);
+	_send_cmd(CMD_WORKING_PERIOD, NULL, 0);
 	bool ok = _read_response(CMD_WORKING_PERIOD);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
 	minutes = _buf[4];
