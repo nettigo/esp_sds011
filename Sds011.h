@@ -12,18 +12,9 @@
 
 class Sds011Base {
 public:
-	enum Command {
-		CMD_DATA_REPORTING_MODE = 2,
-		CMD_QUERY_DATA = 4,
-		CMD_SET_DEVICE_ID = 5,
-		CMD_SLEEP_AND_WORK = 6,
-		CMD_FIRMWARE_VERSION = 7,
-		CMD_WORKING_PERIOD = 8
-	};
-
 	enum Report_mode {
-		ACTIVE = 0,
-		QUERY = 1
+		REPORT_ACTIVE = 0,
+		REPORT_QUERY = 1
 	};
 
 	Sds011Base(Stream& out) : _out(out) {
@@ -47,6 +38,15 @@ public:
 	void filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
 protected:
+	enum Command {
+		CMD_DATA_REPORTING_MODE = 2,
+		CMD_QUERY_DATA = 4,
+		CMD_SET_DEVICE_ID = 5,
+		CMD_SLEEP_AND_WORK = 6,
+		CMD_FIRMWARE_VERSION = 7,
+		CMD_WORKING_PERIOD = 8
+	};
+
 	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
 	uint8_t _read_byte(long unsigned deadline = 0);
 	String _buf_to_string();
@@ -67,7 +67,7 @@ public:
 	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
 
 private:
-	S& _get_out() { return static_cast< S& >(_out); }
+	S & _get_out() { return static_cast<S&>(_out); }
 	std::function<void(int pm25, int pm10)> query_data_auto_handler = 0;
 };
 
