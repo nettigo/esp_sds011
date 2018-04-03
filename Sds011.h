@@ -10,14 +10,14 @@
 
 #include <Stream.h>
 
-class Sds011Base {
+class Sds011 {
 public:
 	enum Report_mode {
 		REPORT_ACTIVE = 0,
 		REPORT_QUERY = 1
 	};
 
-	Sds011Base(Stream& out) : _out(out) {
+	Sds011(Stream& out) : _out(out) {
 	}
 
 	bool device_info(String& firmware_version, uint16_t& device_id);
@@ -58,10 +58,10 @@ protected:
 	bool _timeout = false;
 };
 
-template< class S > class Sds011 : public Sds011Base {
+template< class S > class Sds011Async : public Sds011 {
 	static_assert(std::is_base_of<Stream, S>::value, "S must derive from Stream");
 public:
-	Sds011(S& out) : Sds011Base(out) {
+	Sds011Async(S& out) : Sds011(out) {
 	}
 
 	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
@@ -71,7 +71,7 @@ private:
 	std::function<void(int pm25, int pm10)> query_data_auto_handler = 0;
 };
 
-template< class S > void Sds011< S >::on_query_data_auto(std::function<void(int pm25, int pm10)> handler) {
+template< class S > void Sds011Async< S >::on_query_data_auto(std::function<void(int pm25, int pm10)> handler) {
 	if (!handler) { _get_out().onReceive(0); }
 	query_data_auto_handler = handler;
 	if (handler) {

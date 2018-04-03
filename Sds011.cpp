@@ -1,6 +1,6 @@
 #include "Sds011.h"
 
-bool Sds011Base::device_info(String& firmware_version, uint16_t& device_id) {
+bool Sds011::device_info(String& firmware_version, uint16_t& device_id) {
 	_send_cmd(CMD_FIRMWARE_VERSION, NULL, 0);
 	bool ok = _read_response(CMD_FIRMWARE_VERSION);
 	if (!(ok && crc_ok())) { return false; }
@@ -9,13 +9,13 @@ bool Sds011Base::device_info(String& firmware_version, uint16_t& device_id) {
 	return true;
 }
 
-bool Sds011Base::set_data_reporting_mode(Report_mode mode) {
+bool Sds011::set_data_reporting_mode(Report_mode mode) {
 	uint8_t data[] = { 0x1, mode };
 	_send_cmd(CMD_DATA_REPORTING_MODE, data, 2);
 	return _read_response(CMD_DATA_REPORTING_MODE) && crc_ok() && _buf[3] == 0x1 && _buf[4] == mode;
 }
 
-bool Sds011Base::get_data_reporting_mode(Report_mode& mode) {
+bool Sds011::get_data_reporting_mode(Report_mode& mode) {
 	_send_cmd(CMD_DATA_REPORTING_MODE, NULL, 2);
 	bool ok = _read_response(CMD_DATA_REPORTING_MODE);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
@@ -23,19 +23,19 @@ bool Sds011Base::get_data_reporting_mode(Report_mode& mode) {
 	return true;
 }
 
-bool Sds011Base::set_device_id(uint16_t device_id) {
+bool Sds011::set_device_id(uint16_t device_id) {
 	uint8_t data[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, device_id >> 8, device_id & 0xff };
 	_send_cmd(CMD_SET_DEVICE_ID, data, 12);
 	return _read_response(CMD_SET_DEVICE_ID) && crc_ok() && _buf[6] == device_id >> 8 && _buf[7] == device_id & 0xff;
 }
 
-bool Sds011Base::set_sleep(bool sleep) {
+bool Sds011::set_sleep(bool sleep) {
 	uint8_t data[] = { 0x1, !sleep };
 	_send_cmd(CMD_SLEEP_AND_WORK, data, 2);
 	return _read_response(CMD_SLEEP_AND_WORK) && crc_ok() && _buf[3] == 0x1 && !_buf[4] == sleep;
 }
 
-bool Sds011Base::get_sleep(bool& sleep) {
+bool Sds011::get_sleep(bool& sleep) {
 	_send_cmd(CMD_SLEEP_AND_WORK, NULL, 2);
 	bool ok = _read_response(CMD_SLEEP_AND_WORK);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
@@ -43,13 +43,13 @@ bool Sds011Base::get_sleep(bool& sleep) {
 	return true;
 }
 
-bool Sds011Base::set_working_period(uint8_t minutes) {
+bool Sds011::set_working_period(uint8_t minutes) {
 	uint8_t data[] = { 0x1, minutes };
 	_send_cmd(CMD_WORKING_PERIOD, data, 2);
 	return _read_response(CMD_WORKING_PERIOD) && crc_ok() && _buf[3] == 0x1 && _buf[4] == minutes;
 }
 
-bool Sds011Base::get_working_period(uint8_t& minutes) {
+bool Sds011::get_working_period(uint8_t& minutes) {
 	_send_cmd(CMD_WORKING_PERIOD, NULL, 2);
 	bool ok = _read_response(CMD_WORKING_PERIOD);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
@@ -57,7 +57,7 @@ bool Sds011Base::get_working_period(uint8_t& minutes) {
 	return true;
 }
 
-bool Sds011Base::query_data(int& pm25, int& pm10) {
+bool Sds011::query_data(int& pm25, int& pm10) {
 	_send_cmd(CMD_QUERY_DATA, NULL, 0);
 	bool ok = _read_response(CMD_QUERY_DATA);
 	if (!ok || !crc_ok()) {
@@ -69,7 +69,7 @@ bool Sds011Base::query_data(int& pm25, int& pm10) {
 	return true;
 }
 
-bool Sds011Base::query_data(int& pm25, int& pm10, int n) {
+bool Sds011::query_data(int& pm25, int& pm10, int n) {
 	int pm25_table[n];
 	int pm10_table[n];
 
@@ -87,7 +87,7 @@ bool Sds011Base::query_data(int& pm25, int& pm10, int n) {
 	return n > 0;
 }
 
-bool Sds011Base::query_data_auto(int& pm25, int& pm10) {
+bool Sds011::query_data_auto(int& pm25, int& pm10) {
 	bool ok = _read_response(CMD_QUERY_DATA);
 	if (!ok || !crc_ok()) {
 		return false;
@@ -98,7 +98,7 @@ bool Sds011Base::query_data_auto(int& pm25, int& pm10) {
 	return true;
 }
 
-bool Sds011Base::query_data_auto(int& pm25, int& pm10, int n) {
+bool Sds011::query_data_auto(int& pm25, int& pm10, int n) {
 	int pm25_table[n];
 	int pm10_table[n];
 
@@ -116,7 +116,7 @@ bool Sds011Base::query_data_auto(int& pm25, int& pm10, int n) {
 	return n > 0;
 }
 
-bool Sds011Base::crc_ok() {
+bool Sds011::crc_ok() {
 	uint8_t crc = 0;
 	for (int i = 2; i < 8; ++i) {
 		crc += _buf[i];
@@ -124,11 +124,11 @@ bool Sds011Base::crc_ok() {
 	return crc == _buf[8];
 }
 
-bool Sds011Base::timeout() {
+bool Sds011::timeout() {
 	return _timeout;
 }
 
-void Sds011Base::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
+void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 	uint8_t i;
 	uint8_t crc;
 
@@ -156,7 +156,7 @@ void Sds011Base::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 	_out.write(_buf, sizeof(_buf));
 }
 
-uint8_t Sds011Base::_read_byte(long unsigned deadline) {
+uint8_t Sds011::_read_byte(long unsigned deadline) {
 	while (!_out.available()) {
 		if (deadline > 0 && millis() > deadline) {
 			_timeout = true;
@@ -168,14 +168,14 @@ uint8_t Sds011Base::_read_byte(long unsigned deadline) {
 	return _out.read();
 }
 
-void Sds011Base::_clear_responses() {
+void Sds011::_clear_responses() {
 	auto avail = _out.available();
 	while (avail--) {
 		_out.read();
 	}
 }
 
-bool Sds011Base::_read_response(enum Command cmd) {
+bool Sds011::_read_response(enum Command cmd) {
 	uint8_t i = 0;
 	long unsigned deadline = millis() + 300;
 	while (i < 3) {
@@ -194,7 +194,7 @@ bool Sds011Base::_read_response(enum Command cmd) {
 	return !timeout() && _buf[9] == 0xAB;
 }
 
-String Sds011Base::_buf_to_string(void) {
+String Sds011::_buf_to_string(void) {
 	String ret = "";
 	uint8_t i = 0;
 
@@ -215,7 +215,7 @@ String Sds011Base::_buf_to_string(void) {
 	return ret;
 }
 
-void Sds011Base::filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
+void Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
 	int pm25_min, pm25_max, pm10_min, pm10_max, pm25_sum, pm10_sum;
 
 	pm10_sum = pm10_min = pm10_max = pm10_table[0];
