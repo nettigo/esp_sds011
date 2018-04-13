@@ -169,10 +169,7 @@ uint8_t Sds011::_read_byte(long unsigned deadline) {
 }
 
 void Sds011::_clear_responses() {
-	auto avail = _out.available();
-	while (avail--) {
-		_out.read();
-	}
+	_out.flush();
 }
 
 bool Sds011::_read_response(enum Command cmd) {
