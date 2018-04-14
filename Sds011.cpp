@@ -156,11 +156,11 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 	_out.write(_buf, sizeof(_buf));
 }
 
-uint8_t Sds011::_read_byte(long unsigned deadline) {
+int Sds011::_read_byte(long unsigned deadline) {
 	while (!_out.available()) {
 		if (deadline > 0 && millis() > deadline) {
 			_timeout = true;
-			return 0;
+			return -1;
 		}
 	}
 
@@ -170,14 +170,16 @@ uint8_t Sds011::_read_byte(long unsigned deadline) {
 
 void Sds011::_clear_responses() {
 	_out.flush();
+	auto avail = _out.available();
+	while (avail-- && _out.read() >= 0) {}
 }
 
 bool Sds011::_read_response(enum Command cmd) {
 	uint8_t i = 0;
-	long unsigned deadline = millis() + 300;
+	long unsigned deadline = millis() + 200;
 	while (i < 3) {
 		_buf[i] = _read_byte(deadline);
-		if (timeout()) { return false; }
+		if (timeout()) { break; }
 		switch (i++) {
 		case 0: if (_buf[0] != 0xAA) i = 0; break;
 		case 1: if (_buf[1] != ((cmd == CMD_QUERY_DATA) ? 0xC0 : 0xC5)) i = 0; break;
@@ -185,10 +187,13 @@ bool Sds011::_read_response(enum Command cmd) {
 		}
 	}
 	for (i = 3; i < 10; i++) {
+		if (timeout()) { break; }
 		_buf[i] = _read_byte(deadline);
 	}
 
-	return !timeout() && _buf[9] == 0xAB;
+	bool succ = !timeout() && _buf[9] == 0xAB;
+	if (!succ) { delay(200); }
+	return succ;
 }
 
 String Sds011::_buf_to_string(void) {
