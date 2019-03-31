@@ -1,14 +1,14 @@
 {
-    "name": "ArduinoSDS011",
-    "version": "0.2",
+    "name": "esp_sds011",
+    "version": "0.3.0",
     "keywords": [
       "sds011"
     ],
-    "description": "Arduino library for the SDS011 particulate matter sensor",
+    "description": "ESP8266/ESP32 library for the SDS011 particulate matter sensor",
     "repository":
     {
         "type": "git",
-        "url": "https://github.com/doknet/arduino_sds011"
+        "url": "https://github.com/doknet/esp_sds011"
     },
     "frameworks": "arduino",
     "platforms": "*"
