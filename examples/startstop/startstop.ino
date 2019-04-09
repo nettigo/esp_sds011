@@ -39,6 +39,18 @@ void setup()
 
 	Serial.println("SDS011 start/stop and reporting sample");
 
+	String firmware_version;
+	uint16_t device_id;
+	if (!sds011.device_info(firmware_version, device_id)) {
+		Serial.println("Sds011::firmware_version() failed");
+	} else
+	{
+		Serial.print("Sds011 firmware version: ");
+		Serial.println(firmware_version);
+		Serial.print("Sds011 device id: ");
+		Serial.println(device_id);
+	}
+
 	Sds011::Report_mode report_mode;
 	if (!sds011.get_data_reporting_mode(report_mode)) {
 		Serial.println("Sds011::get_data_reporting_mode() failed");
