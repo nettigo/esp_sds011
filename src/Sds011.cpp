@@ -205,7 +205,7 @@ void Sds011::_clear_responses() {
 
 bool Sds011::_read_response(enum Command cmd) {
 	uint8_t i = 0;
-	long unsigned deadline = millis() + 200;
+	long unsigned deadline = millis() + 500;
 	while (i < 3) {
 		_buf[i] = _read_byte(deadline);
 		if (timeout()) { break; }
@@ -221,7 +221,6 @@ bool Sds011::_read_response(enum Command cmd) {
 	}
 
 	bool succ = !timeout() && _buf[9] == 0xAB;
-	if (!succ) { delay(200); }
 	return succ;
 }
 
