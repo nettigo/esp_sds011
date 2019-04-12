@@ -58,14 +58,21 @@ public:
 	bool get_sleep(bool& sleep);
 	bool set_working_period(uint8_t minutes);
 	bool get_working_period(uint8_t& minutes);
+	bool set_data_rampup(int secs) {
+		rampup_s = secs;
+		return true;
+	}
+	bool get_data_rampup(int& secs) {
+		secs = rampup_s;
+		return true;
+	}
 	bool query_data(int& pm25, int& pm10);
 	bool query_data(int& pm25, int& pm10, int n);
 	bool query_data_auto(int& pm25, int& pm10);
-	bool query_data_auto(int& pm25, int& pm10, int n);
 	bool timeout();
 	bool crc_ok();
 
-	void filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
+	bool filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
 protected:
 	enum Command {
@@ -86,6 +93,8 @@ protected:
 	Stream& _out;
 	uint8_t _buf[19];
 	bool _timeout = false;
+
+	int rampup_s = 10;
 };
 
 template< class S > class Sds011Async : public Sds011 {
@@ -94,26 +103,54 @@ public:
 	Sds011Async(S& out) : Sds011(out) {
 	}
 
-	void on_query_data_auto(std::function<void(int pm25, int pm10)> handler);
+	// Starts collecting maximum n contiguous measurements.
+	// Finalizes measurement early if no data arrives during rampup / 4 interval.
+	// Reports finalized and filtered aggregated measurement through ...completed
+	// event handler.
+	bool query_data_auto_async(int n, int* pm25_table, int* pm10_table);
+	void on_query_data_auto_completed(std::function<void(int pm25, int pm10)> handler);
+	void perform_work();
 
 private:
-	S & _get_out() { return static_cast<S&>(_out); }
+	S& _get_out() { return static_cast<S&>(_out); }
 	std::function<void(int pm25, int pm10)> query_data_auto_handler = 0;
 };
 
-template< class S > void Sds011Async< S >::on_query_data_auto(std::function<void(int pm25, int pm10)> handler) {
+template< class S > bool Sds011Async< S >::query_data_auto_async(int n, int* pm25_table, int* pm10_table) {
+	//for (int i = 0; n > 0 && i < n; ++i) {
+	//	uint32_t deadline = ESP.getCycleCount() + ESP.getCpuFreqMHz() * 1000000 * rampup_s / 4;
+	//	bool ok;
+	//	do {
+	//		ok = _get_out().query_data_auto(pm25_table[i], pm10_table[i]);
+	//		if (!ok && static_cast<int32_t>(ESP.getCycleCount() - deadline) > 0) {
+	//			return false;
+	//		}
+	//	} while (!ok);
+	//	delay(1000);
+	//}
+	int pm25;
+	int pm10;
+	return filter_data(n, pm25_table, pm10_table, pm25, pm10);
+}
+
+
+template< class S > void Sds011Async< S >::on_query_data_auto_completed(std::function<void(int pm25, int pm10)> handler) {
 	if (!handler) { _get_out().onReceive(0); }
 	query_data_auto_handler = handler;
 	if (handler) {
 		_get_out().onReceive([this](int avail) {
-			int estimatedMsgCnt = avail / 10;
-			int pm25;
-			int pm10;
-			if (query_data_auto(pm25, pm10, estimatedMsgCnt)) {
-				query_data_auto_handler(pm25, pm10);
-			}
-		});
+			//int estimatedMsgCnt = avail / 10;
+			//int pm25;
+			//int pm10;
+			//if (query_data_auto(pm25, pm10, estimatedMsgCnt)) {
+			//	query_data_auto_handler(pm25, pm10);
+			//}
+			});
 	}
+}
+
+template< class S > void Sds011Async< S >::perform_work() {
+	_get_out().perform_work();
 }
 
 #endif

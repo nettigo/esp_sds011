@@ -44,7 +44,7 @@ bool Sds011::set_data_reporting_mode(Report_mode mode) {
 	return _read_response(CMD_DATA_REPORTING_MODE) && crc_ok() && _buf[3] == 0x1 && _buf[4] == mode;
 }
 
-bool Sds011::get_data_reporting_mode(Report_mode& mode) {
+bool Sds011::get_data_reporting_mode(Report_mode & mode) {
 	_send_cmd(CMD_DATA_REPORTING_MODE, NULL, 0);
 	bool ok = _read_response(CMD_DATA_REPORTING_MODE);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
@@ -78,7 +78,7 @@ bool Sds011::set_working_period(uint8_t minutes) {
 	return _read_response(CMD_WORKING_PERIOD) && crc_ok() && _buf[3] == 0x1 && _buf[4] == minutes;
 }
 
-bool Sds011::get_working_period(uint8_t& minutes) {
+bool Sds011::get_working_period(uint8_t & minutes) {
 	_send_cmd(CMD_WORKING_PERIOD, NULL, 0);
 	bool ok = _read_response(CMD_WORKING_PERIOD);
 	if (!(ok && crc_ok() && _buf[3] == 0x0)) { return false; }
@@ -127,22 +127,8 @@ bool Sds011::query_data_auto(int& pm25, int& pm10) {
 	return true;
 }
 
-bool Sds011::query_data_auto(int& pm25, int& pm10, int n) {
-	int pm25_table[n];
-	int pm10_table[n];
-
-	for (int i = 0; n > 0 && i < n; ++i) {
-		bool ok = query_data_auto(pm25_table[i], pm10_table[i]);
-		if (!ok) {
-			--n;
-			--i;
-			continue;
-		}
-		delay(1000);
-	}
-
-	filter_data(n, pm25_table, pm10_table, pm25, pm10);
-	return n > 0;
+bool Sds011::timeout() {
+	return _timeout;
 }
 
 bool Sds011::crc_ok() {
@@ -153,11 +139,7 @@ bool Sds011::crc_ok() {
 	return crc == _buf[8];
 }
 
-bool Sds011::timeout() {
-	return _timeout;
-}
-
-void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
+void Sds011::_send_cmd(enum Command cmd, const uint8_t * data, uint8_t len) {
 	uint8_t i;
 	uint8_t crc;
 
@@ -173,7 +155,8 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 	for (i = 0; i < 12; ++i) {
 		if (i < len) {
 			_buf[3 + i] = data[i];
-		} else {
+		}
+		else {
 			_buf[3 + i] = 0;
 		}
 		crc += _buf[3 + i];
@@ -245,7 +228,9 @@ String Sds011::_buf_to_string(void) {
 	return ret;
 }
 
-void Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
+bool Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10) {
+	if (n < 1) return false;
+
 	int pm25_min, pm25_max, pm10_min, pm10_max, pm25_sum, pm10_sum;
 
 	pm10_sum = pm10_min = pm10_max = pm10_table[0];
@@ -271,11 +256,15 @@ void Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, in
 	if (n > 2) {
 		pm10 = (pm10_sum - pm10_max - pm10_min) / (n - 2);
 		pm25 = (pm25_sum - pm25_max - pm25_min) / (n - 2);
-	} else if (n > 1) {
+	}
+	else if (n > 1) {
 		pm10 = (pm10_sum - pm10_min) / (n - 1);
 		pm25 = (pm25_sum - pm25_min) / (n - 1);
-	} else {
+	}
+	else {
 		pm10 = pm10_sum / n;
 		pm25 = pm25_sum / n;
 	}
+
+	return true;
 }
