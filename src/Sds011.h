@@ -106,11 +106,10 @@ template< class S > void Sds011Async< S >::on_query_data_auto(std::function<void
 	query_data_auto_handler = handler;
 	if (handler) {
 		_get_out().onReceive([this](int avail) {
-			int possibleMsgCnt = avail / 10;
-			while (possibleMsgCnt--) {
-				int pm25;
-				int pm10;
-				if (!query_data_auto(pm25, pm10)) { break; }
+			int estimatedMsgCnt = avail / 10;
+			int pm25;
+			int pm10;
+			if (query_data_auto(pm25, pm10, estimatedMsgCnt)) {
 				query_data_auto_handler(pm25, pm10);
 			}
 		});
