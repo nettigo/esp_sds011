@@ -6,7 +6,7 @@ ESP8266/ESP32 Arduino library for the SDS011 particulation matter sensor.
 The MIT License (MIT)
 
 Copyright (c) 2016 Krzysztof A. Adamski
-Copyright (c) 2018 Dirk O. Kaar
+Copyright (c) 2018-2019 Dirk O. Kaar
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -171,8 +171,8 @@ template< class S > bool Sds011Async< S >::query_data_auto_async(int n, int* pm2
 					while (avail > 0 && query_data_auto_collected < query_data_auto_n) {
 						avail -= 10;
 						if (query_data_auto(pm25, pm10)) {
-							query_data_auto_pm25_ptr[query_data_auto_collected] = pm25;
-							query_data_auto_pm10_ptr[query_data_auto_collected] = pm10;
+							*query_data_auto_pm25_ptr++ = pm25;
+							*query_data_auto_pm10_ptr++ = pm10;
 							++query_data_auto_collected;
 						}
 						query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
