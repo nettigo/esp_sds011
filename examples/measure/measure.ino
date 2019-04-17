@@ -13,6 +13,12 @@
 SoftwareSerial serialSDS(SDS_PIN_RX, SDS_PIN_TX, false, 192);
 Sds011Async< SoftwareSerial > sds011(serialSDS);
 
+// The example stops the sensor for 10s, then runs it for 30s, then repeats.
+// At tablesizes 19 and below, the tables get filled during duty cycle
+// and measurement completes.
+// At tablesizes 20 and above, the tables do not get completely filled
+// and the rampup / 4 timeout trips, completing measurement at whatever
+// number of measurements were recorded in the tables.
 constexpr int pm_tablesize = 20;
 int pm25_table[pm_tablesize];
 int pm10_table[pm_tablesize];
@@ -63,13 +69,19 @@ void loop()
 	// Quick response time is given as 10s by the manufacturer, thus omit the measurements
 	// obtained during the first 10s of each run.
 
-	constexpr uint32_t down_s = 30;
+	constexpr uint32_t down_s = 10;
 
 	stop_SDS();
 	Serial.print("stopped SDS011 (is running = ");
 	Serial.print(is_SDS_running);
 	Serial.println(")");
-	delay(down_s * 1000);
+
+	uint32_t deadline = millis() + down_s * 1000;
+	while (static_cast<int32_t>(deadline - millis()) > 0) {
+		delay(1000);
+		Serial.println(static_cast<int32_t>(deadline - millis()) / 1000);
+		sds011.perform_work();
+	}
 
 	constexpr uint32_t duty_s = 30;
 
@@ -78,24 +90,30 @@ void loop()
 	Serial.print(is_SDS_running);
 	Serial.println(")");
 
-	sds011.on_query_data_auto_completed([](int pm25_serial, int pm10_serial) {
+	sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table);
+
+	// must register handler after, not before, query_data_auto_async, otherwise
+	// crashes due to apparent stack corruption.
+	sds011.on_query_data_auto_completed([](int n) {
 		Serial.println("Begin Handling SDS011 query data");
-		if ((!isnan(pm10_serial)) && (!isnan(pm25_serial))) {
+		int pm25;
+		int pm10;
+		Serial.print("n = "); Serial.println(n);
+		if (sds011.filter_data(n, pm25_table, pm10_table, pm25, pm10) &&
+			!isnan(pm10) && !isnan(pm25)) {
 			Serial.print("PM10: ");
-			Serial.println(float(pm10_serial) / 10);
+			Serial.println(float(pm10) / 10);
 			Serial.print("PM2.5: ");
-			Serial.println(float(pm25_serial) / 10);
+			Serial.println(float(pm25) / 10);
 		}
 		sds011.on_query_data_auto_completed(0);
 		Serial.println("End Handling SDS011 query data");
-		});
+	});
 
-	sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table);
-
-	const uint32_t deadline = duty_s * ESP.getCycleCount() + ESP.getCpuFreqMHz() * 1000000;
-
-	while (static_cast<int32_t>(deadline - ESP.getCycleCount()) > 0) {
-		optimistic_yield(1000000);
+	deadline = millis() + duty_s * 1000;
+	while (static_cast<int32_t>(deadline - millis()) > 0) {
+		delay(1000);
+		Serial.println(static_cast<int32_t>(deadline - millis()) / 1000);
 		sds011.perform_work();
 	}
 }
