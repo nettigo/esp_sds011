@@ -106,7 +106,6 @@ void loop()
 			Serial.print("PM2.5: ");
 			Serial.println(float(pm25) / 10);
 		}
-		sds011.on_query_data_auto_completed(0);
 		Serial.println("End Handling SDS011 query data");
 	});
 
