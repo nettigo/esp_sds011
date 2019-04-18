@@ -178,12 +178,12 @@ template< class S > bool Sds011Async< S >::query_data_auto_async(int n, int* pm2
 						query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
 					}
 					if (query_data_auto_collected >= query_data_auto_n) {
-						query_data_auto_state = QDA_OFF;
-						_get_out().onReceive(0);
 						if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+						query_data_auto_handler = 0;
+						query_data_auto_state = QDA_OFF;
 						query_data_auto_pm25_ptr = 0;
 						query_data_auto_pm10_ptr = 0;
-						query_data_auto_handler = 0;
+						_get_out().onReceive(0);
 					}
 				});
 			});
@@ -197,12 +197,12 @@ template< class S > void Sds011Async< S >::perform_work() {
 	// check if collecting deadline has expired
 	if (QDA_COLLECTING == query_data_auto_state &&
 		static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
-		query_data_auto_state = QDA_OFF;
-		_get_out().onReceive(0);
 		if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+		query_data_auto_handler = 0;
+		query_data_auto_state = QDA_OFF;
 		query_data_auto_pm25_ptr = 0;
 		query_data_auto_pm10_ptr = 0;
-		query_data_auto_handler = 0;
+		_get_out().onReceive(0);
 	}
 }
 
