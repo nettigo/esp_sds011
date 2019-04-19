@@ -90,8 +90,6 @@ void loop()
 	Serial.print(is_SDS_running);
 	Serial.println(")");
 
-	sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table);
-
 	// must register handler after, not before, query_data_auto_async, otherwise
 	// crashes due to apparent stack corruption.
 	sds011.on_query_data_auto_completed([](int n) {
@@ -108,6 +106,10 @@ void loop()
 		}
 		Serial.println("End Handling SDS011 query data");
 	});
+
+	if (!sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table)) {
+		Serial.println("measurement capture start failed");
+	}
 
 	deadline = millis() + duty_s * 1000;
 	while (static_cast<int32_t>(deadline - millis()) > 0) {
