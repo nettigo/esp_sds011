@@ -53,9 +53,9 @@ bool Sds011::get_data_reporting_mode(Report_mode & mode) {
 }
 
 bool Sds011::set_device_id(uint16_t device_id) {
-	uint8_t data[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, device_id >> 8, device_id & 0xff };
+	uint8_t data[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, static_cast<uint8>(device_id >> 8), static_cast<uint8_t>(device_id & 0xff) };
 	_send_cmd(CMD_SET_DEVICE_ID, data, 12);
-	return _read_response(CMD_SET_DEVICE_ID) && crc_ok() && _buf[6] == device_id >> 8 && _buf[7] == device_id & 0xff;
+	return _read_response(CMD_SET_DEVICE_ID) && crc_ok() && _buf[6] == device_id >> 8 && _buf[7] == (device_id & 0xff);
 }
 
 bool Sds011::set_sleep(bool sleep) {
