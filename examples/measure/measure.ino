@@ -10,7 +10,7 @@
 #define SDS_PIN_RX D3
 #define SDS_PIN_TX D4
 
-SoftwareSerial serialSDS(SDS_PIN_RX, SDS_PIN_TX, false, 192);
+SoftwareSerial serialSDS;
 Sds011Async< SoftwareSerial > sds011(serialSDS);
 
 // The example stops the sensor for 10s, then runs it for 30s, then repeats.
@@ -45,7 +45,7 @@ void stop_SDS() {
 void setup()
 {
 	Serial.begin(115200);
-	serialSDS.begin(9600);
+	serialSDS.begin(9600, SDS_PIN_RX, SDS_PIN_TX, SWSERIAL_8N1, false, 192);
 
 	Serial.println("SDS011 start/stop and reporting sample");
 
