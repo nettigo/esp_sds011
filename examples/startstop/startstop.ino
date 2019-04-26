@@ -61,33 +61,17 @@ void setup()
 			Serial.println("Sds011::set_data_reporting_mode(Sds011::REPORT_ACTIVE) failed");
 		}
 	}
-
-	sds011.on_query_data_auto([](int pm25_serial, int pm10_serial) {
-		Serial.println("Begin Handling SDS011 data");
-		if ((!isnan(pm10_serial)) && (!isnan(pm25_serial))) {
-			Serial.print("PM10: ");
-			Serial.println(float(pm10_serial) / 10);
-			Serial.print("PM2.5: ");
-			Serial.println(float(pm25_serial) / 10);
-		}
-		Serial.println("End Handling SDS011 data");
-	});
 }
 
 // Add the main program code into the continuous loop() function
 void loop()
 {
 	stop_SDS();
-	Serial.print("SDS011 is running = ");
-	Serial.println(is_SDS_running);
+	Serial.print("SDS011 is stopped = ");
+	Serial.println(!is_SDS_running);
 	delay(10000);
 	start_SDS();
 	Serial.print("SDS011 is running = ");
 	Serial.println(is_SDS_running);
-
-	uint32_t deadline = ESP.getCycleCount() + ESP.getCpuFreqMHz() * 1000000 * 25;
-	while (static_cast<int32_t>(deadline - ESP.getCycleCount()) > 0) {
-		serialSDS.perform_work();
-		optimistic_yield(1000000);
-	}
+	delay(10000);
 }

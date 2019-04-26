@@ -103,6 +103,8 @@ public:
 	Sds011Async(S& out) : Sds011(out) {
 	}
 
+	void perform_work();
+
 	// Starts collecting up to n contiguous measurements.
 	// Stops measurement early if no data arrives during rampup / 4 interval.
 	// Reports measurement entries into the provided tables through ...completed
@@ -111,10 +113,10 @@ public:
 	void on_query_data_auto_completed(std::function<void(int n)> handler) {
 		query_data_auto_handler = handler;
 	}
-	void perform_work();
 
 private:
 	S& _get_out() { return static_cast<S&>(_out); }
+
 	std::function<void(int n)> query_data_auto_handler = 0;
 
 	enum QueryDataAutoState {QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING};
@@ -194,6 +196,7 @@ template< class S > bool Sds011Async< S >::query_data_auto_async(int n, int* pm2
 
 template< class S > void Sds011Async< S >::perform_work() {
 	_get_out().perform_work();
+
 	// check if collecting deadline has expired
 	if (QDA_COLLECTING == query_data_auto_state &&
 		static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
