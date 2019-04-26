@@ -105,7 +105,7 @@ void loop()
 			Serial.println(float(pm25) / 10);
 		}
 		Serial.println("End Handling SDS011 query data");
-	});
+		});
 
 	if (!sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table)) {
 		Serial.println("measurement capture start failed");

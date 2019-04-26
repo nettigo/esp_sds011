@@ -119,7 +119,7 @@ private:
 
 	std::function<void(int n)> query_data_auto_handler = 0;
 
-	enum QueryDataAutoState {QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING};
+	enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
 	QueryDataAutoState query_data_auto_state = QDA_OFF;
 	uint32_t query_data_auto_deadline;
 	int query_data_auto_n = 0;
@@ -187,10 +187,10 @@ template< class S > bool Sds011Async< S >::query_data_auto_async(int n, int* pm2
 						query_data_auto_pm10_ptr = 0;
 						_get_out().onReceive(0);
 					}
+					});
 				});
-			});
 		}
-	});
+		});
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /*
-    Name:       startstop.ino
-    Created:	2019-04-03 7:06:46
-    Author:     Dirk O. Kaar <dok@dok-net.net>
+	Name:       startstop.ino
+	Created:	2019-04-03 7:06:46
+	Author:     Dirk O. Kaar <dok@dok-net.net>
 */
 
 #include <SoftwareSerial.h>
@@ -43,7 +43,8 @@ void setup()
 	uint16_t device_id;
 	if (!sds011.device_info(firmware_version, device_id)) {
 		Serial.println("Sds011::firmware_version() failed");
-	} else
+	}
+	else
 	{
 		Serial.print("Sds011 firmware version: ");
 		Serial.println(firmware_version);
