@@ -85,7 +85,7 @@ protected:
 	};
 
 	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
-	int _read_byte(long unsigned deadline = 0);
+	int _read_byte(long unsigned deadline);
 	String _buf_to_string();
 	void _clear_responses();
 	bool _read_response(enum Command cmd);

@@ -170,7 +170,11 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t * data, uint8_t len) {
 
 int Sds011::_read_byte(long unsigned deadline) {
 	while (!_out.available()) {
-		if (deadline > 0 && millis() > deadline) {
+		long diff = static_cast<long>(deadline - millis());
+		if (diff > 1) {
+			delay(1);
+		}
+		else if (diff < 0) {
 			_timeout = true;
 			return -1;
 		}
