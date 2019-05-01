@@ -4,14 +4,20 @@
 	Author:     Dirk O. Kaar <dok@dok-net.net>
 */
 
+#ifndef ESP32
 #include <SoftwareSerial.h>
+#endif
 #include <Sds011.h>
 
-#define SDS_PIN_RX D3
-#define SDS_PIN_TX D4
+#define SDS_PIN_RX D4
+#define SDS_PIN_TX D3
 
+#ifdef ESP32
+HardwareSerial& serialSDS(Serial2);
+#else
 SoftwareSerial serialSDS;
-Sds011Async< SoftwareSerial > sds011(serialSDS);
+#endif
+Sds011 sds011(serialSDS);
 
 bool is_SDS_running = true;
 
@@ -35,9 +41,18 @@ void stop_SDS() {
 void setup()
 {
 	Serial.begin(115200);
+#ifdef ESP32
+	serialSDS.begin(9600, SERIAL_8N1);
+	delay(100);
+#else
 	serialSDS.begin(9600, SDS_PIN_RX, SDS_PIN_TX, SWSERIAL_8N1, false, 192);
+#endif
 
 	Serial.println("SDS011 start/stop and reporting sample");
+
+	start_SDS();
+	Serial.print("SDS011 is running = ");
+	Serial.println(is_SDS_running);
 
 	String firmware_version;
 	uint16_t device_id;
