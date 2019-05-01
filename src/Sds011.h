@@ -102,20 +102,12 @@ template< class S > class Sds011Async : public Sds011 {
 public:
 	Sds011Async(S& out) : Sds011(out) {
 	}
+	Sds011Async(const Sds011Async&) = delete;
+	Sds011Async& operator= (const Sds011Async&) = delete;
 
 	void perform_work() {
 		_get_out().perform_work();
-
-		// check if collecting deadline has expired
-		if (QDA_COLLECTING == query_data_auto_state &&
-			static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
-			if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
-			query_data_auto_handler = 0;
-			query_data_auto_state = QDA_OFF;
-			query_data_auto_pm25_ptr = 0;
-			query_data_auto_pm10_ptr = 0;
-			onReceive(0);
-		}
+		perform_work_query_data_auto();
 	}
 
 	// Starts collecting up to n contiguous measurements.
@@ -195,6 +187,19 @@ private:
 	S& _get_out() { return static_cast<S&>(_out); }
 	void onReceive(std::function<void(int available)> handler) {
 		_get_out().onReceive(handler);
+	}
+
+	void perform_work_query_data_auto() {
+		// check if collecting deadline has expired
+		if (QDA_COLLECTING == query_data_auto_state &&
+			static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
+			if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+			query_data_auto_handler = 0;
+			query_data_auto_state = QDA_OFF;
+			query_data_auto_pm25_ptr = 0;
+			query_data_auto_pm10_ptr = 0;
+			onReceive(0);
+		}
 	}
 
 	std::function<void(int n)> query_data_auto_handler = 0;
