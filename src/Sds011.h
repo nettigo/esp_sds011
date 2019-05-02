@@ -164,11 +164,11 @@ public:
 						}
 						if (query_data_auto_collected >= query_data_auto_n) {
 							if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
-							query_data_auto_handler = 0;
+							query_data_auto_handler = nullptr;
 							query_data_auto_state = QDA_OFF;
 							query_data_auto_pm25_ptr = 0;
 							query_data_auto_pm10_ptr = 0;
-							onReceive(0);
+							onReceive(nullptr);
 						}
 						});
 					});
@@ -190,15 +190,15 @@ protected:
 		if (QDA_COLLECTING == query_data_auto_state &&
 			static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
 			if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
-			query_data_auto_handler = 0;
+			query_data_auto_handler = nullptr;
 			query_data_auto_state = QDA_OFF;
 			query_data_auto_pm25_ptr = 0;
 			query_data_auto_pm10_ptr = 0;
-			onReceive(0);
+			onReceive(nullptr);
 		}
 	}
 
-	std::function<void(int n)> query_data_auto_handler = 0;
+	std::function<void(int n)> query_data_auto_handler;
 
 	enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
 	QueryDataAutoState query_data_auto_state = QDA_OFF;
@@ -246,7 +246,7 @@ protected:
 		receiveHandler = handler;
 	}
 
-	std::function<void(int available)> receiveHandler = 0;
+	std::function<void(int available)> receiveHandler;
 };
 
 #endif
