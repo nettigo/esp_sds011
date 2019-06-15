@@ -211,24 +211,14 @@ bool Sds011::_read_response(enum Command cmd) {
 	return succ;
 }
 
-String Sds011::_buf_to_string(void) {
-	String ret = "";
-	uint8_t i = 0;
-
-	for (i = 0; i < 19; i++) {
-		char c = (_buf[i] >> 4) + '0';
-		if (c > '9') {
-			c += 'A' - '9' - 1;
-		}
-		ret += c;
-
-		c = (_buf[i] & 0xf) + '0';
-		if (c > '9') {
-			c += 'A' - '9' - 1;
-		}
-		ret += c;
+String Sds011::_buf_to_string(uint8_t size) {
+	String ret;
+	for (int i = 0; i < size; i++) {
+		if (_buf[i] < 0x10) ret += '0';
+		ret += String(_buf[i], 16);
+		if (7 == (i % 8)) ret += ' ';
+		if (i < 18) ret += ' ';
 	}
-
 	return ret;
 }
 
