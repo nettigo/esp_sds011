@@ -103,8 +103,6 @@ void loop()
 	Serial.print(is_SDS_running);
 	Serial.println(")");
 
-	// must register handler after, not before, query_data_auto_async, otherwise
-	// crashes due to apparent stack corruption.
 	sds011.on_query_data_auto_completed([](int n) {
 		Serial.println("Begin Handling SDS011 query data");
 		int pm25;
