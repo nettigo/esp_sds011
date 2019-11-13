@@ -42,211 +42,211 @@ SOFTWARE.
 
 class Sds011 {
 public:
-	enum Report_mode {
-		REPORT_ACTIVE = 0,
-		REPORT_QUERY = 1
-	};
+    enum Report_mode {
+        REPORT_ACTIVE = 0,
+        REPORT_QUERY = 1
+    };
 
-	Sds011(Stream& out) : _out(out) {
-	}
+    Sds011(Stream& out) : _out(out) {
+    }
 
-	bool device_info(String& firmware_version, uint16_t& device_id);
-	bool set_data_reporting_mode(Report_mode mode);
-	bool get_data_reporting_mode(Report_mode& mode);
-	bool set_device_id(uint16_t device_id);
-	bool set_sleep(bool sleep);
-	bool get_sleep(bool& sleep);
-	bool set_working_period(uint8_t minutes);
-	bool get_working_period(uint8_t& minutes);
-	bool set_data_rampup(int secs) {
-		rampup_s = secs;
-		return true;
-	}
-	bool get_data_rampup(int& secs) {
-		secs = rampup_s;
-		return true;
-	}
-	bool query_data(int& pm25, int& pm10);
-	bool query_data(int& pm25, int& pm10, int n);
-	bool query_data_auto(int& pm25, int& pm10);
-	bool timeout();
-	bool crc_ok();
+    bool device_info(String& firmware_version, uint16_t& device_id);
+    bool set_data_reporting_mode(Report_mode mode);
+    bool get_data_reporting_mode(Report_mode& mode);
+    bool set_device_id(uint16_t device_id);
+    bool set_sleep(bool sleep);
+    bool get_sleep(bool& sleep);
+    bool set_working_period(uint8_t minutes);
+    bool get_working_period(uint8_t& minutes);
+    bool set_data_rampup(int secs) {
+        rampup_s = secs;
+        return true;
+    }
+    bool get_data_rampup(int& secs) {
+        secs = rampup_s;
+        return true;
+    }
+    bool query_data(int& pm25, int& pm10);
+    bool query_data(int& pm25, int& pm10, int n);
+    bool query_data_auto(int& pm25, int& pm10);
+    bool timeout();
+    bool crc_ok();
 
-	bool filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
+    bool filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
 protected:
-	enum Command {
-		CMD_DATA_REPORTING_MODE = 2,
-		CMD_QUERY_DATA = 4,
-		CMD_SET_DEVICE_ID = 5,
-		CMD_SLEEP_AND_WORK = 6,
-		CMD_FIRMWARE_VERSION = 7,
-		CMD_WORKING_PERIOD = 8
-	};
+    enum Command {
+        CMD_DATA_REPORTING_MODE = 2,
+        CMD_QUERY_DATA = 4,
+        CMD_SET_DEVICE_ID = 5,
+        CMD_SLEEP_AND_WORK = 6,
+        CMD_FIRMWARE_VERSION = 7,
+        CMD_WORKING_PERIOD = 8
+    };
 
-	void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
-	int _read_byte(long unsigned deadline);
-	String _buf_to_string(uint8_t size);
-	void _clear_responses();
-	bool _read_response(enum Command cmd);
+    void _send_cmd(enum Command cmd, const uint8_t* buf, uint8_t len);
+    int _read_byte(long unsigned deadline);
+    String _buf_to_string(uint8_t size);
+    void _clear_responses();
+    bool _read_response(enum Command cmd);
 
-	Stream& _out;
-	uint8_t _buf[19];
-	bool _timeout = false;
+    Stream& _out;
+    uint8_t _buf[19];
+    bool _timeout = false;
 
-	unsigned rampup_s = 10;
+    unsigned rampup_s = 10;
 };
 
 class Sds011Async_Base : public Sds011 {
 public:
-	Sds011Async_Base(Stream& out) : Sds011(out) {
-	}
-	Sds011Async_Base(const Sds011Async_Base&) = delete;
-	Sds011Async_Base& operator= (const Sds011Async_Base&) = delete;
+    Sds011Async_Base(Stream& out) : Sds011(out) {
+    }
+    Sds011Async_Base(const Sds011Async_Base&) = delete;
+    Sds011Async_Base& operator= (const Sds011Async_Base&) = delete;
 
-	virtual void perform_work() {
-		perform_work_query_data_auto();
-	}
+    virtual void perform_work() {
+        perform_work_query_data_auto();
+    }
 
-	// Starts collecting up to n contiguous measurements.
-	// Stops measurement early if no data arrives during rampup / 4 interval.
-	// Reports measurement entries into the provided tables through ...completed
-	// event handler.
-	bool query_data_auto_async(int n, int* pm25_table, int* pm10_table) {
-		if (QDA_OFF != query_data_auto_state) return false;
-		query_data_auto_n = n;
-		query_data_auto_pm25_ptr = pm25_table;
-		query_data_auto_pm10_ptr = pm10_table;
-		query_data_auto_collected = 0;
+    // Starts collecting up to n contiguous measurements.
+    // Stops measurement early if no data arrives during rampup / 4 interval.
+    // Reports measurement entries into the provided tables through ...completed
+    // event handler.
+    bool query_data_auto_async(int n, int* pm25_table, int* pm10_table) {
+        if (QDA_OFF != query_data_auto_state) return false;
+        query_data_auto_n = n;
+        query_data_auto_pm25_ptr = pm25_table;
+        query_data_auto_pm10_ptr = pm10_table;
+        query_data_auto_collected = 0;
 
-		query_data_auto_state = QDA_WAITCOLLECT;
-		onReceive([this](int avail) {
-			int estimatedMsgCnt = avail / 10;
-			int pm25;
-			int pm10;
-			int dataAutoCnt = 0;
-			while (estimatedMsgCnt--) if (query_data_auto(pm25, pm10)) {
-				++dataAutoCnt;
-			}
-			// estimate 1s cutting into rampup per data_auto msg
-			if (dataAutoCnt > 0) {
-				--dataAutoCnt;
+        query_data_auto_state = QDA_WAITCOLLECT;
+        onReceive([this](int avail) {
+            int estimatedMsgCnt = avail / 10;
+            int pm25;
+            int pm10;
+            int dataAutoCnt = 0;
+            while (estimatedMsgCnt--) if (query_data_auto(pm25, pm10)) {
+                ++dataAutoCnt;
+            }
+            // estimate 1s cutting into rampup per data_auto msg
+            if (dataAutoCnt > 0) {
+                --dataAutoCnt;
 
-				query_data_auto_state = QDA_RAMPUP;
-				query_data_auto_deadline = millis() + (rampup_s - dataAutoCnt) * 1000U;
-				onReceive([this](int avail) {
-					int32_t deadlineRelative = static_cast<int32_t>(millis() - query_data_auto_deadline);
-					if (deadlineRelative < 0) {
-						_get_out().flush();
-						return;
-					}
-					int pm25;
-					int pm10;
-					// discard estimated msgs prior to deadline expiration
-					while (avail > 0 && deadlineRelative >= 1000) {
-						avail -= 10;
-						if (query_data_auto(pm25, pm10)) deadlineRelative -= 1000;
-					}
+                query_data_auto_state = QDA_RAMPUP;
+                query_data_auto_deadline = millis() + (rampup_s - dataAutoCnt) * 1000U;
+                onReceive([this](int avail) {
+                    int32_t deadlineRelative = static_cast<int32_t>(millis() - query_data_auto_deadline);
+                    if (deadlineRelative < 0) {
+                        _get_out().flush();
+                        return;
+                    }
+                    int pm25;
+                    int pm10;
+                    // discard estimated msgs prior to deadline expiration
+                    while (avail > 0 && deadlineRelative >= 1000) {
+                        avail -= 10;
+                        if (query_data_auto(pm25, pm10)) deadlineRelative -= 1000;
+                    }
 
-					query_data_auto_state = QDA_COLLECTING;
-					query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
-					onReceive([this](int avail) {
-						int pm25;
-						int pm10;
-						while (avail > 0 && query_data_auto_collected < query_data_auto_n) {
-							avail -= 10;
-							if (query_data_auto(pm25, pm10)) {
-								*query_data_auto_pm25_ptr++ = pm25;
-								*query_data_auto_pm10_ptr++ = pm10;
-								++query_data_auto_collected;
-							}
-							query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
-						}
-						if (query_data_auto_collected >= query_data_auto_n) {
-							if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
-							query_data_auto_handler = nullptr;
-							query_data_auto_state = QDA_OFF;
-							query_data_auto_pm25_ptr = 0;
-							query_data_auto_pm10_ptr = 0;
-							onReceive(nullptr);
-						}
-						});
-					});
-			}
-			});
-		return true;
-	}
+                    query_data_auto_state = QDA_COLLECTING;
+                    query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
+                    onReceive([this](int avail) {
+                        int pm25;
+                        int pm10;
+                        while (avail > 0 && query_data_auto_collected < query_data_auto_n) {
+                            avail -= 10;
+                            if (query_data_auto(pm25, pm10)) {
+                                *query_data_auto_pm25_ptr++ = pm25;
+                                *query_data_auto_pm10_ptr++ = pm10;
+                                ++query_data_auto_collected;
+                            }
+                            query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
+                        }
+                        if (query_data_auto_collected >= query_data_auto_n) {
+                            if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+                            query_data_auto_handler = nullptr;
+                            query_data_auto_state = QDA_OFF;
+                            query_data_auto_pm25_ptr = 0;
+                            query_data_auto_pm10_ptr = 0;
+                            onReceive(nullptr);
+                        }
+                        });
+                    });
+            }
+            });
+        return true;
+    }
 
-	void on_query_data_auto_completed(std::function<void(int n)> handler) {
-		query_data_auto_handler = handler;
-	}
+    void on_query_data_auto_completed(std::function<void(int n)> handler) {
+        query_data_auto_handler = handler;
+    }
 
 protected:
-	Stream& _get_out() { return _out; }
-	virtual void onReceive(std::function<void(int available)> handler) = 0;
+    Stream& _get_out() { return _out; }
+    virtual void onReceive(std::function<void(int available)> handler) = 0;
 
-	void perform_work_query_data_auto() {
-		// check if collecting deadline has expired
-		if (QDA_COLLECTING == query_data_auto_state &&
-			static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
-			if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
-			query_data_auto_handler = nullptr;
-			query_data_auto_state = QDA_OFF;
-			query_data_auto_pm25_ptr = 0;
-			query_data_auto_pm10_ptr = 0;
-			onReceive(nullptr);
-		}
-	}
+    void perform_work_query_data_auto() {
+        // check if collecting deadline has expired
+        if (QDA_COLLECTING == query_data_auto_state &&
+            static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
+            if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+            query_data_auto_handler = nullptr;
+            query_data_auto_state = QDA_OFF;
+            query_data_auto_pm25_ptr = 0;
+            query_data_auto_pm10_ptr = 0;
+            onReceive(nullptr);
+        }
+    }
 
-	std::function<void(int n)> query_data_auto_handler;
+    std::function<void(int n)> query_data_auto_handler;
 
-	enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
-	QueryDataAutoState query_data_auto_state = QDA_OFF;
-	uint32_t query_data_auto_deadline;
-	int query_data_auto_n = 0;
-	int* query_data_auto_pm25_ptr = 0;
-	int* query_data_auto_pm10_ptr = 0;
-	int query_data_auto_collected;
+    enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
+    QueryDataAutoState query_data_auto_state = QDA_OFF;
+    uint32_t query_data_auto_deadline;
+    int query_data_auto_n = 0;
+    int* query_data_auto_pm25_ptr = 0;
+    int* query_data_auto_pm10_ptr = 0;
+    int query_data_auto_collected;
 };
 
 template< class S > class Sds011Async : public Sds011Async_Base {
-	static_assert(std::is_base_of<Stream, S>::value, "S must derive from Stream"); 
+    static_assert(std::is_base_of<Stream, S>::value, "S must derive from Stream");
 public:
-	Sds011Async(S& out) : Sds011Async_Base(out) {
-	}
+    Sds011Async(S& out) : Sds011Async_Base(out) {
+    }
 
-	void perform_work() override {
-		_get_out().perform_work();
-		Sds011Async_Base::perform_work();
-	}
+    void perform_work() override {
+        _get_out().perform_work();
+        Sds011Async_Base::perform_work();
+    }
 
 protected:
-	S& _get_out() { return static_cast<S&>(_out); }
-	void onReceive(std::function<void(int available)> handler) override {
-		_get_out().onReceive(handler);
-	}
+    S& _get_out() { return static_cast<S&>(_out); }
+    void onReceive(std::function<void(int available)> handler) override {
+        _get_out().onReceive(handler);
+    }
 };
 
 template<> class Sds011Async<HardwareSerial> : public Sds011Async_Base {
 public:
-	Sds011Async(HardwareSerial& out) : Sds011Async_Base(out) {
-	}
+    Sds011Async(HardwareSerial& out) : Sds011Async_Base(out) {
+    }
 
-	void perform_work() override {
-		if (receiveHandler) {
-			int avail = _get_out().available();
-			if (avail) { receiveHandler(avail); }
-		}
-		Sds011Async_Base::perform_work();
-	}
+    void perform_work() override {
+        if (receiveHandler) {
+            int avail = _get_out().available();
+            if (avail) { receiveHandler(avail); }
+        }
+        Sds011Async_Base::perform_work();
+    }
 
 protected:
-	HardwareSerial& _get_out() { return static_cast<HardwareSerial&>(_out); }
-	void onReceive(std::function<void(int available)> handler) override {
-		receiveHandler = handler;
-	}
+    HardwareSerial& _get_out() { return static_cast<HardwareSerial&>(_out); }
+    void onReceive(std::function<void(int available)> handler) override {
+        receiveHandler = handler;
+    }
 
-	std::function<void(int available)> receiveHandler;
+    std::function<void(int available)> receiveHandler;
 };
 
 #endif
