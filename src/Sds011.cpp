@@ -261,3 +261,83 @@ bool Sds011::filter_data(int n, const int* pm25_table, const int* pm10_table, in
 
     return true;
 }
+
+bool Sds011Async_Base::query_data_auto_async(int n, int* pm25_table, int* pm10_table) {
+    if (QDA_OFF != query_data_auto_state) return false;
+    query_data_auto_n = n;
+    query_data_auto_pm25_ptr = pm25_table;
+    query_data_auto_pm10_ptr = pm10_table;
+    query_data_auto_collected = 0;
+
+    query_data_auto_state = QDA_WAITCOLLECT;
+    onReceive([this](int avail) {
+        int estimatedMsgCnt = avail / 10;
+        int pm25;
+        int pm10;
+        int dataAutoCnt = 0;
+        while (estimatedMsgCnt--) if (query_data_auto(pm25, pm10)) {
+            ++dataAutoCnt;
+        }
+        // estimate 1s cutting into rampup per data_auto msg
+        if (dataAutoCnt > 0) {
+            --dataAutoCnt;
+
+            query_data_auto_state = QDA_RAMPUP;
+            query_data_auto_start = millis();
+            query_data_auto_deadline = (rampup_s - dataAutoCnt) * 1000UL;
+            onReceive([this](int avail) {
+                unsigned long deadlineExpired = millis() - query_data_auto_start;
+                if (deadlineExpired < query_data_auto_deadline) {
+                    _get_out().flush();
+                    return;
+                }
+                int pm25;
+                int pm10;
+                // discard estimated msgs prior to deadline expiration
+                while (avail >= 10 && deadlineExpired - query_data_auto_deadline >= 1000UL) {
+                    avail -= 10;
+                    if (query_data_auto(pm25, pm10)) deadlineExpired -= 1000UL;
+                }
+
+                query_data_auto_state = QDA_COLLECTING;
+                query_data_auto_start = millis();
+                query_data_auto_deadline = 1000UL / 4UL * rampup_s;
+                onReceive([this](int avail) {
+                    int pm25;
+                    int pm10;
+                    while (avail >= 10 && query_data_auto_collected < query_data_auto_n) {
+                        avail -= 10;
+                        if (query_data_auto(pm25, pm10)) {
+                            *query_data_auto_pm25_ptr++ = pm25;
+                            *query_data_auto_pm10_ptr++ = pm10;
+                            ++query_data_auto_collected;
+                        }
+                        query_data_auto_start = millis();
+                    }
+                    if (query_data_auto_collected >= query_data_auto_n) {
+                        if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+                        query_data_auto_handler = nullptr;
+                        query_data_auto_state = QDA_OFF;
+                        query_data_auto_pm25_ptr = 0;
+                        query_data_auto_pm10_ptr = 0;
+                        onReceive(nullptr);
+                    }
+                    });
+                });
+        }
+        });
+    return true;
+}
+
+void Sds011Async_Base::perform_work_query_data_auto() {
+    // check if collecting deadline has expired
+    if (QDA_COLLECTING == query_data_auto_state &&
+        millis() - query_data_auto_start > query_data_auto_deadline) {
+        if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
+        query_data_auto_handler = nullptr;
+        query_data_auto_state = QDA_OFF;
+        query_data_auto_pm25_ptr = 0;
+        query_data_auto_pm10_ptr = 0;
+        onReceive(nullptr);
+    }
+}
