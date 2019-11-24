@@ -169,15 +169,14 @@ void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
 }
 
 int Sds011::_read_byte(long unsigned deadline) {
+    uint32_t start = millis();
     while (!_out.available()) {
-        long diff = static_cast<long>(deadline - millis());
-        if (diff > 1) {
+        if (millis() - start < deadline) {
             delay(1);
+            continue;
         }
-        else if (diff < 0) {
-            _timeout = true;
-            return -1;
-        }
+        _timeout = true;
+        return -1;
     }
 
     _timeout = false;
@@ -192,7 +191,7 @@ void Sds011::_clear_responses() {
 
 bool Sds011::_read_response(enum Command cmd) {
     uint8_t i = 0;
-    long unsigned deadline = millis() + 500;
+    const long unsigned deadline = 1000;
     while (i < 3) {
         _buf[i] = _read_byte(deadline);
         if (timeout()) { break; }

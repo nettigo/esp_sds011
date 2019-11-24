@@ -133,34 +133,36 @@ public:
                 --dataAutoCnt;
 
                 query_data_auto_state = QDA_RAMPUP;
-                query_data_auto_deadline = millis() + (rampup_s - dataAutoCnt) * 1000U;
+                query_data_auto_start = millis();
+                query_data_auto_deadline = (rampup_s - dataAutoCnt) * 1000UL;
                 onReceive([this](int avail) {
-                    int32_t deadlineRelative = static_cast<int32_t>(millis() - query_data_auto_deadline);
-                    if (deadlineRelative < 0) {
+                    unsigned long deadlineExpired = millis() - query_data_auto_start;
+                    if (deadlineExpired < query_data_auto_deadline) {
                         _get_out().flush();
                         return;
                     }
                     int pm25;
                     int pm10;
                     // discard estimated msgs prior to deadline expiration
-                    while (avail > 0 && deadlineRelative >= 1000) {
+                    while (avail >= 10 && deadlineExpired - query_data_auto_deadline >= 1000UL) {
                         avail -= 10;
-                        if (query_data_auto(pm25, pm10)) deadlineRelative -= 1000;
+                        if (query_data_auto(pm25, pm10)) deadlineExpired -= 1000UL;
                     }
 
                     query_data_auto_state = QDA_COLLECTING;
-                    query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
+                    query_data_auto_start = millis();
+                    query_data_auto_deadline = 1000UL / 4UL * rampup_s;
                     onReceive([this](int avail) {
                         int pm25;
                         int pm10;
-                        while (avail > 0 && query_data_auto_collected < query_data_auto_n) {
+                        while (avail >= 10 && query_data_auto_collected < query_data_auto_n) {
                             avail -= 10;
                             if (query_data_auto(pm25, pm10)) {
                                 *query_data_auto_pm25_ptr++ = pm25;
                                 *query_data_auto_pm10_ptr++ = pm10;
                                 ++query_data_auto_collected;
                             }
-                            query_data_auto_deadline = millis() + 1000U / 4U * rampup_s;
+                            query_data_auto_start = millis();
                         }
                         if (query_data_auto_collected >= query_data_auto_n) {
                             if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
@@ -188,7 +190,7 @@ protected:
     void perform_work_query_data_auto() {
         // check if collecting deadline has expired
         if (QDA_COLLECTING == query_data_auto_state &&
-            static_cast<int32_t>(millis() - query_data_auto_deadline) > 0) {
+            millis() - query_data_auto_start > query_data_auto_deadline) {
             if (query_data_auto_handler) query_data_auto_handler(query_data_auto_collected);
             query_data_auto_handler = nullptr;
             query_data_auto_state = QDA_OFF;
@@ -202,6 +204,7 @@ protected:
 
     enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
     QueryDataAutoState query_data_auto_state = QDA_OFF;
+    uint32_t query_data_auto_start;
     uint32_t query_data_auto_deadline;
     int query_data_auto_n = 0;
     int* query_data_auto_pm25_ptr = 0;
