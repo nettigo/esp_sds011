@@ -38,7 +38,7 @@ SOFTWARE.
 #endif
 
 #include <Stream.h>
-#include <functional>
+#include <Delegate.h>
 
 class Sds011 {
 public:
@@ -114,17 +114,17 @@ public:
     // event handler.
     bool query_data_auto_async(int n, int* pm25_table, int* pm10_table);
 
-    void on_query_data_auto_completed(std::function<void(int n)> handler) {
+    void on_query_data_auto_completed(Delegate<void(int n), void*> handler) {
         query_data_auto_handler = handler;
     }
 
 protected:
     Stream& _get_out() { return _out; }
-    virtual void onReceive(std::function<void(int available)> handler) = 0;
+    virtual void onReceive(Delegate<void(int available), void*> handler) = 0;
 
     void perform_work_query_data_auto();
 
-    std::function<void(int n)> query_data_auto_handler;
+    Delegate<void(int n), void*> query_data_auto_handler;
 
     enum QueryDataAutoState { QDA_OFF, QDA_WAITCOLLECT, QDA_RAMPUP, QDA_COLLECTING };
     QueryDataAutoState query_data_auto_state = QDA_OFF;
@@ -149,7 +149,7 @@ public:
 
 protected:
     S& _get_out() { return static_cast<S&>(_out); }
-    void onReceive(std::function<void(int available)> handler) override {
+    void onReceive(Delegate<void(int available), void*> handler) override {
         _get_out().onReceive(handler);
     }
 };
@@ -169,11 +169,11 @@ public:
 
 protected:
     HardwareSerial& _get_out() { return static_cast<HardwareSerial&>(_out); }
-    void onReceive(std::function<void(int available)> handler) override {
+    void onReceive(Delegate<void(int available), void*> handler) override {
         receiveHandler = handler;
     }
 
-    std::function<void(int available)> receiveHandler;
+    Delegate<void(int available), void*> receiveHandler;
 };
 
 #endif
