@@ -133,7 +133,7 @@ protected:
     int query_data_auto_n = 0;
     int* query_data_auto_pm25_ptr = 0;
     int* query_data_auto_pm10_ptr = 0;
-    int query_data_auto_collected;
+    int query_data_auto_collected = 0;
 };
 
 template< class S > class Sds011Async : public Sds011Async_Base {

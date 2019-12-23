@@ -320,6 +320,7 @@ bool Sds011Async_Base::query_data_auto_async(int n, int* pm25_table, int* pm10_t
                         query_data_auto_state = QDA_OFF;
                         query_data_auto_pm25_ptr = 0;
                         query_data_auto_pm10_ptr = 0;
+                        query_data_auto_collected = 0;
                         onReceive(nullptr);
                     }
                     });
@@ -338,6 +339,7 @@ void Sds011Async_Base::perform_work_query_data_auto() {
         query_data_auto_state = QDA_OFF;
         query_data_auto_pm25_ptr = 0;
         query_data_auto_pm10_ptr = 0;
+        query_data_auto_collected = 0;
         onReceive(nullptr);
     }
 }
