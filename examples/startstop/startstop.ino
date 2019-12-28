@@ -4,9 +4,7 @@
     Author:     Dirk O. Kaar <dok@dok-net.net>
 */
 
-#ifndef ESP32
 #include <SoftwareSerial.h>
-#endif
 #include <Sds011.h>
 
 #define SDS_PIN_RX D7

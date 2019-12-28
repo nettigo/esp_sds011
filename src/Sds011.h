@@ -38,7 +38,7 @@ SOFTWARE.
 #endif
 
 #include <Stream.h>
-#include <Delegate.h>
+#include <circular_queue/Delegate.h>
 
 class Sds011 {
 public:
