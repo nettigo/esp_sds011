@@ -18,12 +18,13 @@ SoftwareSerial serialSDS;
 Sds011Async< SoftwareSerial > sds011(serialSDS);
 #endif
 
-// The example stops the sensor for 10s, then runs it for 30s, then repeats.
-// At tablesizes 19 and below, the tables get filled during duty cycle
-// and measurement completes.
-// At tablesizes 20 and above, the tables do not get completely filled
-// and the rampup / 4 timeout trips, completing measurement at whatever
-// number of measurements were recorded in the tables.
+// The example stops the sensor for 210s, then runs it for 30s, then repeats.
+// At tablesizes 20 and below, the tables get filled during duty cycle
+// and then measurement completes.
+// At tablesizes above 20, the tables do not get completely filled
+// during the 30s total runtime, and the rampup / 4 timeout trips,
+// thus completing the measurement at whatever number of data points
+// were recorded in the tables.
 constexpr int pm_tablesize = 20;
 int pm25_table[pm_tablesize];
 int pm10_table[pm_tablesize];
@@ -76,11 +77,11 @@ void setup()
 void loop()
 {
     // Per manufacturer specification, place the sensor in standby to prolong service life.
-    // At an user-determined interval (here 30s down plus 30s duty = 1m), run the sensor for 30s.
-    // Quick response time is given as 10s by the manufacturer, thus omit the measurements
-    // obtained during the first 10s of each run.
+    // At an user-determined interval (here 210s down plus 30s duty = 4m), run the sensor for 30s.
+    // Quick response time is given as 10s by the manufacturer, thus the library drops the
+    // measurements obtained during the first 10s of each run.
 
-    constexpr uint32_t down_s = 10;
+    constexpr uint32_t down_s = 210;
 
     stop_SDS();
     Serial.print("stopped SDS011 (is running = ");
