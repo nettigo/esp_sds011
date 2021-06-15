@@ -33,7 +33,9 @@ bool Sds011::device_info(String& firmware_version, uint16_t& device_id) {
     _send_cmd(CMD_FIRMWARE_VERSION, NULL, 0);
     bool ok = _read_response(CMD_FIRMWARE_VERSION);
     if (!(ok && crc_ok())) { return false; }
-    firmware_version = String(_buf[3]) + String(_buf[4]) + String(_buf[5]);
+    char strbuf[7];
+    snprintf(strbuf, sizeof(strbuf), "%02u%02u%02u", _buf[3] % 100, _buf[4] % 100, _buf[5] % 100);
+    firmware_version = strbuf;
     device_id = (static_cast<uint16_t>(_buf[6]) << 8) + _buf[7];
     return true;
 }
