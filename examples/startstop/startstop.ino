@@ -64,7 +64,7 @@ void setup()
         Serial.print("Sds011 firmware version: ");
         Serial.println(firmware_version);
         Serial.print("Sds011 device id: ");
-        Serial.println(device_id);
+        Serial.println(device_id, 16);
     }
 
     Sds011::Report_mode report_mode;
