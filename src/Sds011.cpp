@@ -136,8 +136,15 @@ bool Sds011::crc_ok() {
     for (int i = 2; i < 8; ++i) {
         crc += _buf[i];
     }
+    if (crc != _buf[8]) checksum_errors++;
     return crc == _buf[8];
 }
+
+bool Sds011::crc_stats(uint32_t& err, uint32_t& total){
+    err = checksum_errors;
+    total = processed_responses;
+    return true;
+};
 
 void Sds011::_send_cmd(enum Command cmd, const uint8_t* data, uint8_t len) {
     uint8_t i;
@@ -207,6 +214,8 @@ bool Sds011::_read_response(enum Command cmd) {
     }
 
     bool succ = !timeout() && _buf[9] == 0xAB;
+    if (succ) processed_responses++;
+    
     return succ;
 }
 

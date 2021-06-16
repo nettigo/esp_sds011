@@ -71,6 +71,7 @@ public:
     bool query_data_auto(int& pm25, int& pm10);
     bool timeout();
     bool crc_ok();
+    bool crc_stats(uint32_t& err, uint32_t& total);
 
     bool filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
@@ -95,6 +96,9 @@ protected:
     bool _timeout = false;
 
     unsigned rampup_s = 10;
+
+    uint32_t checksum_errors = 0;
+    uint32_t processed_responses = 0;
 };
 
 class Sds011Async_Base : public Sds011 {
