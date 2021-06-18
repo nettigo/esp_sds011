@@ -72,6 +72,8 @@ public:
     bool timeout();
     bool crc_ok();
     bool crc_stats(uint32_t& err, uint32_t& total);
+    bool reset_crc_stats();
+
 
     bool filter_data(int n, const int* pm25_table, const int* pm10_table, int& pm25, int& pm10);
 
